@@ -1,34 +1,61 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useRef, Suspense } from 'react'
+import axios from 'axios'
+import { theme } from './theme'
+import LoadingModal from './components/LoadingModalRef'
+import { ThemeProvider } from '@emotion/react'
+import { CssBaseline } from '@mui/material'
+import Loader from './components/Loader'
+import ProtectedRoute from './layout/ProtectedLayout'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const loadingModalRef = useRef<{ setOpen: (open: boolean) => void } | null>(null)
+  axios.defaults.baseURL = import.meta.env.VITE_API_ENDPOIN || "http://localhost:3001/api"
+  axios.interceptors.request.use(
+    (config) => {
+      if (loadingModalRef.current) {
+        loadingModalRef.current.setOpen(true)
+      }
+      const token = localStorage.getItem("access-token");
+      if (token) {
+        config.headers["Authorization"] = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      if (loadingModalRef.current) {
+        loadingModalRef.current.setOpen(false)
+      }
+      Promise.reject(error);
+    }
+  );
 
+  axios.interceptors.response.use(
+    function (response) {
+      if (loadingModalRef.current) {
+        loadingModalRef.current.setOpen(false)
+      }
+      return response;
+    },
+    async function (error) {
+      if (loadingModalRef.current) {
+        loadingModalRef.current.setOpen(false)
+      }
+      if (error.response.status === 401) {
+        localStorage.removeItem("access-token");
+      } else if (error.response.status === 400) {
+      }
+    }
+  );
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <div className="app" style={{ maxWidth: "100vw", maxHeight: "100vh" }}>
+        <Suspense fallback={<Loader />}>
+          <ProtectedRoute />
+        </Suspense>
+        <LoadingModal ref={loadingModalRef} setOpen={() => { }} />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count issssss {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </ThemeProvider>
   )
 }
 
