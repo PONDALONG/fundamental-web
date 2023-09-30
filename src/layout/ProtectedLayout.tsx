@@ -102,14 +102,14 @@ export default function ProtectedRoute(props: Props) {
       >
         {drawer}
       </Drawer>
-      <Box 
+      <Box
         sx={{
           display: { xs: 'none', lg: 'block' }, width: drawerWidth,
         }}
       >
         {drawer}
       </Box>
-      <Divider orientation="vertical" flexItem/>
+      <Divider orientation="vertical" flexItem />
       <Box
         className='min-h-screen'
         // sx={{ width: { lg: `calc(100% - ${drawerWidth}px)` } }}
