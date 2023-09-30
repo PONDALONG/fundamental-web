@@ -5,7 +5,7 @@ import LoadingModal from './components/LoadingModalRef'
 import { ThemeProvider } from '@emotion/react'
 import { CssBaseline } from '@mui/material'
 import Loader from './components/Loader'
-import ProtectedRoute from './layout/ProtectedLayout'
+import Routes from './routes/routes'
 
 function App() {
   const loadingModalRef = useRef<{ setOpen: (open: boolean) => void } | null>(null)
@@ -51,7 +51,7 @@ function App() {
       <CssBaseline />
       <div className="app" style={{ maxWidth: "100vw", maxHeight: "100vh" }}>
         <Suspense fallback={<Loader />}>
-          <ProtectedRoute />
+          <Routes />
         </Suspense>
         <LoadingModal ref={loadingModalRef} setOpen={() => { }} />
       </div>
