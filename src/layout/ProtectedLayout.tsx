@@ -9,7 +9,6 @@ import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -18,6 +17,13 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import PeopleIcon from '@mui/icons-material/People';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import Avatar from '@mui/material/Avatar';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import BookIcon from '@mui/icons-material/Book';
+import Logout from '@mui/icons-material/Logout';
+import { logoutAlert } from '../utils/SweetAlert';
 const drawerWidth = 240;
 
 interface Props {
@@ -36,12 +42,35 @@ export default function ProtectedRoute(props: Props) {
     setMobileOpen(!mobileOpen);
   };
 
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const openMenu = Boolean(anchorEl);
+  const handleClickMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogoutClick = () => {
+    logoutAlert().then((res) => {
+      if (res.isConfirmed) {
+        localStorage.removeItem('access-token')
+        navigate('/')
+      }
+    })
+  }
   const sideBarMenu = [
     {
       title: 'แดชบอร์ด',
       to: '/dashboard',
       isShow: true,
       icon: <DashboardIcon />
+    },
+    {
+      title: 'เนื้อหารายวิชา',
+      to: '/content',
+      isShow: true,
+      icon: <BookIcon />
     },
     {
       title: 'กลุ่มเรียน',
@@ -112,7 +141,6 @@ export default function ProtectedRoute(props: Props) {
       <Divider orientation="vertical" flexItem />
       <Box
         className='min-h-screen'
-        // sx={{ width: { lg: `calc(100% - ${drawerWidth}px)` } }}
         sx={{ width: '100%' }}
       >
         <Box
@@ -131,10 +159,43 @@ export default function ProtectedRoute(props: Props) {
             >
               <MenuIcon />
             </IconButton>
-            <div className='flex flex-row justify-between items-center'>
+            <div className='flex flex-row justify-between items-center w-full'>
               <Typography variant="h6" noWrap component="div" className='hidden md:block text-white'>
                 รายวิชา Fundamental of Computer Engineering
               </Typography>
+              <div>
+                <IconButton
+                  onClick={handleClickMenu}
+                  size="small"
+                  sx={{ ml: 2 }}
+                  aria-controls={openMenu ? 'account-menu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={openMenu ? 'true' : undefined}
+                >
+                  <Avatar className='bg-secondary'>WS</Avatar>
+                </IconButton>
+                <Menu
+                  anchorEl={anchorEl}
+                  id="account-menu"
+                  open={openMenu}
+                  onClose={handleCloseMenu}
+                  onClick={handleCloseMenu}
+                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                  sx={{ width: 200 }}
+                >
+                  <MenuItem>
+                    <Typography variant='inherit' noWrap>Phathompong Seeponsan</Typography>
+                  </MenuItem>
+                  <Divider />
+                  <MenuItem onClick={handleLogoutClick}>
+                    <ListItemIcon>
+                      <Logout fontSize="small" />
+                    </ListItemIcon>
+                    Logout
+                  </MenuItem>
+                </Menu>
+              </div>
             </div>
           </Toolbar>
         </Box>

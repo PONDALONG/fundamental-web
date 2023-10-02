@@ -5,10 +5,11 @@ const DashboardPage = lazy(() => import('../pages/Dashboard'))
 const SectionPage = lazy(() => import('../pages/Section'))
 const AssignmentPage = lazy(() => import('../pages/Assignment'))
 const StudentPage = lazy(() => import('../pages/Student'))
+const ContentPage = lazy(() => import('../pages/Content'))
 const SignInPage = lazy(() => import('../pages/SignIn'))
 
 export default function Routes() {
-    const auth = true
+    const auth = localStorage.getItem('access-token') || false
     let routes = useRoutes([
         {
             path: "/",
@@ -21,6 +22,10 @@ export default function Routes() {
                 {
                     path: 'dashboard',
                     element: <DashboardPage />
+                },
+                {
+                    path: 'content',
+                    element: <ContentPage />
                 },
                 {
                     path: 'section',
