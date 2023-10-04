@@ -146,6 +146,7 @@ export default function ProtectedRoute(props: Props) {
         <Box
           sx={{
             width: '100%',
+            maxWidth: '100vw',
             background: '#352F44'
           }}
         >

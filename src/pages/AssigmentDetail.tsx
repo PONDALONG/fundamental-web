@@ -2,9 +2,14 @@ import { TextField } from '@mui/material'
 import { DateTimePicker } from '@mui/x-date-pickers'
 import dayjs from 'dayjs'
 import React, { useState, useRef } from 'react'
-
+import TextEditor from '../components/TextEditor'
 
 function AssigmentDetail() {
+  const contentText = useRef("")
+  const onContentTextChange = (data: string) => {
+    console.log(data);
+    contentText.current = data
+  }
 
   return (
     <div className='flex flex-col gap-2 px-2'>
@@ -25,6 +30,9 @@ function AssigmentDetail() {
               label="กำหนดส่ง"
               defaultValue={dayjs(new Date())}
             />
+          </div>
+          <div className='w-full'>
+            <TextEditor  sendData={onContentTextChange} />
           </div>
         </div>
       </div>

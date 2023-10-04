@@ -4,7 +4,7 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 function Assignment() {
   return (
-    <div className='flex flex-col gap-2 px-2'>
+    <div className='flex flex-col gap-2 px-2 w-full'>
       <h2 className='text-secondary'>แบบฝึกหัด</h2>
       <div className='w-full flex gap-3'>
         <div className='flex gap-2 items-center'>
@@ -44,9 +44,9 @@ function Assignment() {
           </FormControl>
         </div>
       </div>
-      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2'>
         {['', '', '', '', '', '', '', '', '',].map((m, index) => (
-          <Card key={index} className='w-full'>
+          <Card key={index} className='w-full max-w-fit'>
             <CardHeader
               title={"LAB" + (index + 1)}
               subheader="กำหนดส่ง 22 มกราคม 2566"
