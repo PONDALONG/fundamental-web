@@ -6,6 +6,8 @@ import { ThemeProvider } from '@emotion/react'
 import { CssBaseline } from '@mui/material'
 import Loader from './components/Loader'
 import Routes from './routes/routes'
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 function App() {
   const loadingModalRef = useRef<{ setOpen: (open: boolean) => void } | null>(null)
@@ -49,12 +51,14 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <div className="app" style={{ maxWidth: "100vw", maxHeight: "100vh" }}>
-        <Suspense fallback={<Loader />}>
-          <Routes />
-        </Suspense>
-        <LoadingModal ref={loadingModalRef} setOpen={() => { }} />
-      </div>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <div className="app" style={{ maxWidth: "100vw", maxHeight: "100vh" }}>
+          <Suspense fallback={<Loader />}>
+            <Routes />
+          </Suspense>
+          <LoadingModal ref={loadingModalRef} setOpen={() => { }} />
+        </div>
+      </LocalizationProvider>
     </ThemeProvider>
   )
 }

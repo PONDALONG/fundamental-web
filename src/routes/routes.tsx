@@ -7,6 +7,7 @@ const AssignmentPage = lazy(() => import('../pages/Assignment'))
 const StudentPage = lazy(() => import('../pages/Student'))
 const ContentPage = lazy(() => import('../pages/Content'))
 const SignInPage = lazy(() => import('../pages/SignIn'))
+const AssignmentDetail = lazy(() => import('../pages/AssigmentDetail'))
 
 export default function Routes() {
     const auth = localStorage.getItem('access-token') || false
@@ -34,6 +35,10 @@ export default function Routes() {
                 {
                     path: 'assignment',
                     element: <AssignmentPage />
+                },
+                {
+                    path: 'assignment/:id',
+                    element: <AssignmentDetail />
                 },
                 {
                     path: 'student',
