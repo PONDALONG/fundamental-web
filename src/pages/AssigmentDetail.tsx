@@ -1,40 +1,133 @@
-import { TextField } from '@mui/material'
+import { Button, IconButton, Switch, TextField, Tooltip, Typography } from '@mui/material'
 import { DateTimePicker } from '@mui/x-date-pickers'
+import * as yup from "yup";
+import { Formik } from "formik";
 import dayjs from 'dayjs'
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import TextEditor from '../components/TextEditor'
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { ensureRemove } from '../utils/SweetAlert';
+import { useNavigate } from 'react-router-dom';
+
+const assignmentDetailSchema = yup.object().shape({
+  title: yup.string().required("กรุณากรอกชื่อแบบฝึกหัด"),
+  due: yup.string().required("กรุณาเลือกวันกำหนดส่ง"),
+})
+
 
 function AssigmentDetail() {
+  const navigate = useNavigate()
+  const [assignmentStatus, setAssignmentStatus] = useState<boolean>(true)
   const contentText = useRef("")
+  const [file, setFile] = useState<File[]>([])
+  const [initAssignmentDetailForm, setAssignmentDetailForm] = useState({
+    title: "",
+    due: dayjs(new Date())
+  })
+
+  useEffect(() => {
+    console.log(assignmentStatus);
+    
+  }, [assignmentStatus])
+
   const onContentTextChange = (data: string) => {
-    console.log(data);
     contentText.current = data
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile([...file, e.target.files[0]]);
+    }
+  };
+
+  const onRemoveFile = async (indexOfFile: number) => {
+    const confirm = await ensureRemove("ต้องการลบไฟล์ใช่หรือไม่?")
+    if (confirm.isConfirmed) {
+      setFile(file.filter((f: File, index) => index != indexOfFile))
+    }
+
+  }
+
+  const onSubmitAssigmentDetail = async (value: any) => {
+    console.log(value);
+  }
   return (
     <div className='flex flex-col gap-2 px-2'>
       <div className='flex gap-2 my-3 font-bold'>
-        <span className='text-gray-400 hover:text-gray-700 duration-300 cursor-pointer'>Assignment</span>
+        <span className='text-gray-400 hover:text-gray-700 duration-300 cursor-pointer' onClick={() => navigate('/assignment')}>Assignment</span>
         <span className='text-gray-400'>{'>'}</span>
         <span className='text-gray-400'>Assignment Detail</span>
       </div>
-      <div className='w-full flex flex-col justify-center items-center gap-2'>
-        <div className='w-[60%] flex flex-col justify-start gap-5'>
-          <div className='flex flex-col gap-3'>
-            <label className='font-bold text-primary'>ชื่อแบบฝึกหัด</label>
-            <TextField label="ชื่อแบบฝึกหัด" variant="standard" />
-          </div>
-          <div className='flex flex-col gap-2'>
-            <label className='font-bold text-primary'>กำหนดส่ง</label>
-            <DateTimePicker
-              label="กำหนดส่ง"
-              defaultValue={dayjs(new Date())}
-            />
-          </div>
-          <div className='w-full'>
-            <TextEditor  sendData={onContentTextChange} />
-          </div>
+      <div className='w-full flex flex-col justify-center items-center gap-3 relative'>
+        <div className='absolute top-1 right-1 md:right-[20%] flex justify-center items-center'>
+          <span className='font-bold text-red-500'>ปิด</span>
+          <Switch color='success' checked={assignmentStatus} onChange={() => setAssignmentStatus(!assignmentStatus)} />
+          <span className='font-bold text-green-500'>เปิด</span>
         </div>
+        <Formik
+          onSubmit={onSubmitAssigmentDetail}
+          initialValues={initAssignmentDetailForm}
+          validationSchema={assignmentDetailSchema}>
+          {({
+            values,
+            errors,
+            touched,
+            handleBlur,
+            handleChange,
+            handleSubmit
+          }) => (
+            <form onSubmit={handleSubmit} className='w-[90%] md:w-[60%] flex flex-col justify-start gap-5'>
+              <div className='flex flex-col gap-3'>
+                <label className='font-bold text-primary'>ชื่อแบบฝึกหัด</label>
+                <TextField label="ชื่อแบบฝึกหัด" variant="standard" required
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                  name='title'
+                  value={values.title}
+                  error={!!touched.title && !!errors.title}
+                  helperText={touched.title && errors.title}
+                />
+              </div>
+              <div className='flex flex-col gap-2'>
+                <label className='font-bold text-primary'>กำหนดส่ง</label>
+                <DateTimePicker
+                  label="กำหนดส่ง"
+                  defaultValue={initAssignmentDetailForm.due}
+                  value={values.due}
+                />
+              </div>
+              <div className='w-full'>
+                <TextEditor sendData={onContentTextChange} />
+              </div>
+              <div className='w-full flex flex-col gap-2 mt-16 lg:mt-10 py-3'>
+                <span className='font-bold text-primary'>อัปโหลดไฟล์</span>
+                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2'>
+                  {(file && file.length > 0) && file.map((f: File, index) => (
+                    <div key={index} className='relative group h-20 w-full border-slate-400 border-solid border-[1px] rounded-lg flex justify-center items-center cursor-pointer hover:bg-slate-500 duration-300'>
+                      <DeleteIcon
+                        onClick={() => onRemoveFile(index)}
+                        className='absolute top-1 right-1 w-5 h-5 hover:text-red-500 hover:scale-150 duration-1000 cursor-pointer' />
+                      {f.name}
+                    </div>
+                  ))}
+                  <Tooltip title="อัปโหลดไฟล์" placement='top-end'>
+                    <label htmlFor="upload-file">
+                      <div className='group h-20 w-full border-slate-400 border-solid border-[1px] rounded-lg flex justify-center items-center cursor-pointer hover:bg-slate-500 duration-300'>
+                        <AddIcon className='group-hover:text-white' />
+                      </div>
+                      <input className='hidden' onChange={handleFileChange} type="file" id='upload-file' />
+                    </label>
+                  </Tooltip>
+                </div>
+              </div>
+              <div className='flex justify-center items-center gap-2'>
+                <Button type='submit' variant='contained' color='success' >บันทึก</Button>
+                <Button variant='contained' color='inherit' onClick={() => navigate('/assignment')}>ยกเลิก</Button>
+              </div>
+            </form>
+          )}
+        </Formik>
       </div>
     </div>
   )

@@ -37,9 +37,9 @@ function TextEditor({ sendData }: TextEditorInput) {
         theme="snow"
         modules={modules}
         formats={formats}
-        placeholder="write your description ...."
+        placeholder="เพิ่มคำอธิบาย...."
         onChange={handleProcedureContentChange}
-        style={{ height: "100%", width: '100%', maxWidth: '100%' }}
+        style={{ height: "300px", width: '100%', maxWidth: '100%' }}
       >
       </ReactQuill>
     )

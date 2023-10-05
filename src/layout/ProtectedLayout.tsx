@@ -150,7 +150,7 @@ export default function ProtectedRoute(props: Props) {
             background: '#352F44'
           }}
         >
-          <Toolbar>
+          <Toolbar className='flex justify-between'>
             <IconButton
               color="inherit"
               aria-label="open drawer"
@@ -160,7 +160,7 @@ export default function ProtectedRoute(props: Props) {
             >
               <MenuIcon />
             </IconButton>
-            <div className='flex flex-row justify-between items-center w-full'>
+            <div className='flex flex-row justify-end md:justify-between items-center w-full'>
               <Typography variant="h6" noWrap component="div" className='hidden md:block text-white'>
                 รายวิชา Fundamental of Computer Engineering
               </Typography>

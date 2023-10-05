@@ -37,7 +37,11 @@ export default function Routes() {
                     element: <AssignmentPage />
                 },
                 {
-                    path: 'assignment/:id',
+                    path: 'assignment-detail/:id',
+                    element: <AssignmentDetail />
+                },
+                {
+                    path: 'assignment-detail',
                     element: <AssignmentDetail />
                 },
                 {
