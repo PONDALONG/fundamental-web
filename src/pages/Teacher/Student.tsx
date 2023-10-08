@@ -2,7 +2,7 @@ import { FormControl, MenuItem, Select, Button, Box } from '@mui/material'
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import DownloadIcon from '@mui/icons-material/Download';
 import { useState } from 'react'
-import { StudentSectionModel } from '../types/StudentModel'
+import { StudentSectionModel } from '../../types/StudentModel'
 import MUIDataTable from 'mui-datatables'
 
 export default function Student() {
@@ -153,7 +153,12 @@ export default function Student() {
               }
               return "\uFEFF" + '"1212","","","2255"\n' + buildHead(columns) + buildBody(data);
             },
-            selectableRows: 'none'
+            selectableRows: 'none',
+            textLabels: {
+              body: {
+                noMatch: 'ไม่พบข้อมูล'
+              }
+            }
           }}
         />
       </div>

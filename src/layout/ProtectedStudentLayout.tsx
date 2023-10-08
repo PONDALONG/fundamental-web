@@ -22,6 +22,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import BookIcon from '@mui/icons-material/Book';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Logout from '@mui/icons-material/Logout';
 import { logoutAlert } from '../utils/SweetAlert';
 const drawerWidth = 240;
@@ -34,7 +35,7 @@ interface Props {
   window?: () => Window;
 }
 
-export default function ProtectedRoute(props: Props) {
+export default function ProtectedStudentRoute(props: Props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const navigate = useNavigate()
@@ -61,35 +62,17 @@ export default function ProtectedRoute(props: Props) {
   }
   const sideBarMenu = [
     {
-      title: 'แดชบอร์ด',
-      to: '/dashboard',
-      isShow: true,
-      icon: <DashboardIcon />
-    },
-    {
-      title: 'เนื้อหารายวิชา',
-      to: '/content',
-      isShow: true,
-      icon: <BookIcon />
-    },
-    {
-      title: 'กลุ่มเรียน',
-      to: '/section',
-      isShow: true,
-      icon: <GroupsIcon />
-    },
-    {
-      title: 'แบบฝึกหัด',
-      to: '/assignment',
-      isShow: true,
-      icon: <AssignmentIcon />
-    },
-    {
-      title: 'รายชื่อนักศึกษา',
-      to: '/student',
-      isShow: true,
-      icon: <PeopleIcon />
-    },
+        title: 'แบบฝึกหัด',
+        to: '/assignment',
+        isShow: true,
+        icon: <AssignmentIcon />
+      },
+      {
+        title: 'ข้อมูลส่วนตัว',
+        to: '/profile',
+        isShow: true,
+        icon: <AccountCircleIcon />
+      },
   ]
 
   const drawer = (
@@ -186,7 +169,7 @@ export default function ProtectedRoute(props: Props) {
                   sx={{ width: 200 }}
                 >
                   <MenuItem>
-                    <Typography variant='inherit' noWrap>Phathompong Seeponsan</Typography>
+                    <Typography variant='inherit' noWrap>วินัย ศรีบุริน</Typography>
                   </MenuItem>
                   <Divider />
                   <MenuItem onClick={handleLogoutClick}>

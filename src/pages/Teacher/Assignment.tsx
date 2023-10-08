@@ -1,4 +1,4 @@
-import { Card, Typography, CardActions, Button, CardContent, FormControl, CardHeader } from '@mui/material'
+import { Card, Typography, CardActions, Button, CardContent, FormControl, CardHeader, Tooltip } from '@mui/material'
 import { useState } from 'react'
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
@@ -48,21 +48,26 @@ function Assignment() {
           </div>
         </div>
         <div className='flex md:justify-end w-[200px]'>
-            <Button variant='contained' color='success' onClick={() => navigate('/assignment-detail')} >เพิ่มแบบฝึดหัด</Button>
+            <Button variant='contained' color='success' onClick={() => navigate('/teacher/assignment-detail')} >เพิ่มแบบฝึกหัด</Button>
         </div>
       </div>
 
-      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2'>
         {['', '', '', '', '', '', '', '', '',].map((m, index) => (
-          <Card key={index} className='w-full max-w-fit relative'>
-            <div className='absolute top-1 right-1'>
-              <Button variant='contained' color='warning' onClick={() => navigate('/assignment-detail/1')} >แก้ไข</Button>
+          <Card key={index} className='w-full relative'>
+            <div className='absolute top-1 right-1 cursor-pointer'>
+              <Tooltip title='สถานะ: เปิดรับ' placement='top'>
+                    <div className='w-4 h-4 rounded-full bg-green-500 ring-2 ring-green-400'>
+
+                    </div>
+              </Tooltip>
+              
             </div>
             <CardHeader
               title={"LAB" + (index + 1)}
               subheader="กำหนดส่ง 22 มกราคม 2566"
             />
-            <CardContent>
+            {/* <CardContent>
               <Typography variant="body1" color="text.secondary">
                 Introduction into Fundamental of Computer Engineering
               </Typography>
@@ -70,9 +75,9 @@ function Assignment() {
                 Lizards are a widespread group of squamate reptiles, with over 6,000
                 species, ranging across all continents except Antarctica
               </Typography>
-            </CardContent>
+            </CardContent> */}
             <CardActions className='flex justify-between'>
-              <Button size="medium" className='text-blue-500'>รายละเอียด</Button>
+              <Button size="medium" variant='contained' color='info'>รายละเอียด</Button>
               <Typography variant="caption" color="text.secondary">
                 15 มกราคม 2566
               </Typography>

@@ -18,7 +18,7 @@ function SignIn() {
     if (value.username === 'admin' && value.password === 'admin') {
       successAlert('เข้าสู่ระบบสำเร็จ').then(() => {
         localStorage.setItem('access-token', 'admin')
-        window.location.href = '/'
+        window.location.href = '/teacher'
       })
     }
     

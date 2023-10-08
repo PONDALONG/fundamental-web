@@ -1,64 +1,103 @@
 import { Navigate, Outlet, useRoutes } from "react-router-dom";
-import ProtectedRoute from "../layout/ProtectedLayout";
+import ProtectedTeacherRoute from "../layout/ProtectedTeacherLayout";
+import ProtectedStudentRoute from "../layout/ProtectedStudentLayout";
 import { lazy } from "react";
-const DashboardPage = lazy(() => import('../pages/Dashboard'))
-const SectionPage = lazy(() => import('../pages/Section'))
-const AssignmentPage = lazy(() => import('../pages/Assignment'))
-const StudentPage = lazy(() => import('../pages/Student'))
-const ContentPage = lazy(() => import('../pages/Content'))
+
+const DashboardTeacherPage = lazy(() => import('../pages/Teacher/Dashboard'))
+const SectionTeacherPage = lazy(() => import('../pages/Teacher/Section'))
+const AssignmentTeacherPage = lazy(() => import('../pages/Teacher/Assignment'))
+const StudentTeacherPage = lazy(() => import('../pages/Teacher/Student'))
+const ContentTeacherPage = lazy(() => import('../pages/Teacher/Content'))
 const SignInPage = lazy(() => import('../pages/SignIn'))
-const AssignmentDetail = lazy(() => import('../pages/AssigmentDetail'))
+const AssignmentDetailTeacherPage = lazy(() => import('../pages/Teacher/AssigmentDetail'))
+const SubmittedAssignmentListPage = lazy(() => import('../pages/Teacher/SubbmitedAssignmentList'))
+const ProfileTeacher = lazy(() => import('../pages/Teacher/ProfileTeacher'))
+const SubmittedAssignmenttPage = lazy(() => import('../pages/Teacher/SubmittedAssignment'))
+
+const AssignmentStudentPage = lazy(() => import('../pages/Student/Assignment'))
+const ProfileStudentPage = lazy(() => import('../pages/Student/ProfileStudent'))
 
 export default function Routes() {
     const auth = localStorage.getItem('access-token') || false
+    const role: string = 'TEACHER'
     let routes = useRoutes([
         {
-            path: "/",
-            element: auth ? <ProtectedRoute /> : <Navigate to={'/sign-in'} />,
+            path: '',
+            element: (auth && role.toUpperCase() === 'STUDENT' || role.toUpperCase() === 'TEACHER') ? <ProtectedStudentRoute /> : <Navigate to={'/sign-in'} />,
             children: [
                 {
-                    path: '/',
-                    element: <Navigate to={'/dashboard'}></Navigate>
+                    path: '',
+                    element: <Navigate to={'/assignment'}></Navigate>
                 },
                 {
-                    path: 'dashboard',
-                    element: <DashboardPage />
+                    path: '/assignment',
+                    element: <AssignmentStudentPage />
                 },
                 {
-                    path: 'content',
-                    element: <ContentPage />
+                    path: '/profile',
+                    element: <ProfileStudentPage />
+                }
+            ]
+        },
+        {
+            path: "teacher",
+            element:  (auth && role.toUpperCase() === 'TEACHER')  ? <ProtectedTeacherRoute /> : <Navigate to={'/sign-in'} />,
+            children: [
+                {
+                    path: '',
+                    element: <Navigate to={'/teacher/dashboard'}></Navigate>
                 },
                 {
-                    path: 'section',
-                    element: <SectionPage />
+                    path: '/teacher/dashboard',
+                    element: <DashboardTeacherPage />
                 },
                 {
-                    path: 'assignment',
-                    element: <AssignmentPage />
+                    path: '/teacher/content',
+                    element: <ContentTeacherPage />
                 },
                 {
-                    path: 'assignment-detail/:id',
-                    element: <AssignmentDetail />
+                    path: '/teacher/section',
+                    element: <SectionTeacherPage />
                 },
                 {
-                    path: 'assignment-detail',
-                    element: <AssignmentDetail />
+                    path: '/teacher/assignment',
+                    element: <AssignmentTeacherPage />
                 },
                 {
-                    path: 'student',
-                    element: <StudentPage />
+                    path: '/teacher/assignment-detail/:id',
+                    element: <AssignmentDetailTeacherPage />
                 },
+                {
+                    path: '/teacher/assignment-detail',
+                    element: <AssignmentDetailTeacherPage />
+                },
+                {
+                    path: '/teacher/submitted-assignment',
+                    element: <SubmittedAssignmentListPage />
+                },
+                {
+                    path: '/teacher/submitted-assignment/:id',
+                    element: <SubmittedAssignmenttPage />
+                },
+                {
+                    path: '/teacher/student',
+                    element: <StudentTeacherPage />
+                },
+                {
+                    path: '/teacher/profile',
+                    element: <ProfileTeacher></ProfileTeacher>
+                }
             ]
         },
         {
             path: '/',
-            element: !auth ? <Outlet /> : <Navigate to={'/'} />,
+            element: (!auth && role.toUpperCase() !== 'TEACHER' || role.toUpperCase() !== 'STUDENT') ? <Outlet /> : <Navigate to={'/'} />,
             children: [
                 {
                     path: 'sign-in', element: <SignInPage />
                 },
                 {
-                    path: '/',
+                    path: '',
                     element: <Navigate to={'/sign-in'}/>
                 }
             ]

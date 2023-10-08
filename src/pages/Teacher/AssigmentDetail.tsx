@@ -4,31 +4,36 @@ import * as yup from "yup";
 import { Formik } from "formik";
 import dayjs from 'dayjs'
 import React, { useState, useRef, useEffect } from 'react'
-import TextEditor from '../components/TextEditor'
+import TextEditor from '../../components/TextEditor'
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ensureRemove } from '../utils/SweetAlert';
-import { useNavigate } from 'react-router-dom';
+import { ensureRemove } from '../../utils/SweetAlert';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Radio from '@mui/material/Radio';
 
 const assignmentDetailSchema = yup.object().shape({
   title: yup.string().required("กรุณากรอกชื่อแบบฝึกหัด"),
   due: yup.string().required("กรุณาเลือกวันกำหนดส่ง"),
+  score: yup.number().required('กรุณากรอกคะแนนแบบฝึกหัด')
 })
 
 
 function AssigmentDetail() {
   const navigate = useNavigate()
+  const { id } = useParams();
   const [assignmentStatus, setAssignmentStatus] = useState<boolean>(true)
   const contentText = useRef("")
   const [file, setFile] = useState<File[]>([])
   const [initAssignmentDetailForm, setAssignmentDetailForm] = useState({
     title: "",
-    due: dayjs(new Date())
+    due: dayjs(new Date()),
+    score: ""
   })
 
   useEffect(() => {
-    console.log(assignmentStatus);
-    
+    console.log(id);
   }, [assignmentStatus])
 
   const onContentTextChange = (data: string) => {
@@ -55,12 +60,13 @@ function AssigmentDetail() {
   return (
     <div className='flex flex-col gap-2 px-2'>
       <div className='flex gap-2 my-3 font-bold'>
-        <span className='text-gray-400 hover:text-gray-700 duration-300 cursor-pointer' onClick={() => navigate('/assignment')}>Assignment</span>
+        <span className='text-gray-400 hover:text-gray-700 duration-300 cursor-pointer' onClick={() => navigate('/teacher/assignment')}>Assignment</span>
         <span className='text-gray-400'>{'>'}</span>
         <span className='text-gray-400'>Assignment Detail</span>
       </div>
       <div className='w-full flex flex-col justify-center items-center gap-3 relative'>
         <div className='absolute top-1 right-1 md:right-[20%] flex justify-center items-center'>
+          <span className='hidden lg:block mr-2'>สถานะแบบฝึกหัด: </span>
           <span className='font-bold text-red-500'>ปิด</span>
           <Switch color='success' checked={assignmentStatus} onChange={() => setAssignmentStatus(!assignmentStatus)} />
           <span className='font-bold text-green-500'>เปิด</span>
@@ -89,13 +95,36 @@ function AssigmentDetail() {
                   helperText={touched.title && errors.title}
                 />
               </div>
-              <div className='flex flex-col gap-2'>
-                <label className='font-bold text-primary'>กำหนดส่ง</label>
-                <DateTimePicker
-                  label="กำหนดส่ง"
-                  defaultValue={initAssignmentDetailForm.due}
-                  value={values.due}
-                />
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
+                <div className='flex flex-col gap-2'>
+                  <label className='font-bold text-primary'>กำหนดส่ง</label>
+                  <DateTimePicker
+                    label="กำหนดส่ง"
+                    defaultValue={initAssignmentDetailForm.due}
+                    value={values.due}
+                  />
+                </div>
+                <div className='flex flex-col gap-2'>
+                  <label className='font-bold text-primary'>คะแนน</label>
+                  <TextField label="คะแนน" variant="outlined" required
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    name='score'
+                    value={values.score}
+                    error={!!touched.score && !!errors.score}
+                    helperText={touched.score && errors.score}
+                  />
+                </div>
+              </div>
+              <div className='flex items-center gap-2'>
+                <label className='font-bold text-primary'>ประเภทงาน</label>
+                <RadioGroup
+                  defaultValue="invidual"
+                  row
+                >
+                  <FormControlLabel value="invidual" control={<Radio />} label="เดี่ยว" />
+                  <FormControlLabel value="group" control={<Radio />} label="กลุ่ม" />
+                </RadioGroup>
               </div>
               <div className='w-full'>
                 <TextEditor sendData={onContentTextChange} />
@@ -123,7 +152,7 @@ function AssigmentDetail() {
               </div>
               <div className='flex justify-center items-center gap-2'>
                 <Button type='submit' variant='contained' color='success' >บันทึก</Button>
-                <Button variant='contained' color='inherit' onClick={() => navigate('/assignment')}>ยกเลิก</Button>
+                <Button variant='contained' color='inherit' onClick={() => navigate('/teacher/assignment')}>ยกเลิก</Button>
               </div>
             </form>
           )}
