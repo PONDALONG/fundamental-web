@@ -94,7 +94,7 @@ function SubbmitedAssignmentList() {
                     return (
                         <Box display={"flex"} flexDirection={{ xs: "column", sm: "row" }} gap={1} justifyContent={"center"} alignItems={"center"} width={{ xs: "100%", lg: "50%" }}>
                             {String(tableMeta.rowData[2]).toUpperCase() !== 'WAITING' && (
-                                <Button fullWidth color='info' variant='contained'onClick={() => navigate(`/teacher/submitted-assignment/${1}`)} >
+                                <Button fullWidth color='info' variant='contained'onClick={() => navigate(`/teacher/student-submitted/${1}`)} >
                                     ตรวจงาน
                                 </Button>
                             )}
@@ -132,6 +132,9 @@ function SubbmitedAssignmentList() {
                         }
                     }}
                 />
+            </div>
+            <div className='w-full flex gap-2 items-center'>
+                    <Button variant='contained' color='inherit'onClick={() => navigate(`/teacher/assignment/`)}>กลับ</Button>
             </div>
         </div>
     )

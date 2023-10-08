@@ -4,9 +4,10 @@ import DownloadIcon from '@mui/icons-material/Download';
 import { useState } from 'react'
 import { StudentSectionModel } from '../../types/StudentModel'
 import MUIDataTable from 'mui-datatables'
+import { useNavigate } from 'react-router-dom';
 
 export default function Student() {
-
+  const navigate = useNavigate()
   const [studentList, setStudentList] = useState<StudentSectionModel[]>([])
 
   const columns = [
@@ -58,7 +59,10 @@ export default function Student() {
         sort: false,
         customBodyRender: (value: number) => {
           return (
-            <Box display={"flex"} flexDirection={{ xs: "column", sm: "row" }} gap={1} justifyContent={"center"} alignItems={"center"} width={{ xs: "100%", lg: "50%" }}>
+            <Box display={"flex"} flexDirection={{ xs: "column", sm: "row" }} gap={1} justifyContent={"center"} alignItems={"center"} width={'100%'}>
+              <Button fullWidth color='info' variant='contained' onClick={() => navigate('/teacher/student/1')}>
+                รายละเอียด
+              </Button>
               <Button fullWidth color='warning' variant='contained'>
                 แก้ไข
               </Button>

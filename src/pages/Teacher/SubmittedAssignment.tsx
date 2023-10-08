@@ -69,7 +69,7 @@ function SubmittedAssignment() {
             </div>
             <div className='w-full flex justify-center items-center gap-2 my-2'>
                     <Button variant='contained' color='success'>บันทึก</Button>
-                    <Button variant='contained' color='inherit' onClick={() => navigte('/teacher/submitted-assignment')}>ยกเลิก</Button>
+                    <Button variant='contained' color='inherit' onClick={() => navigte(-1)}>ยกเลิก</Button>
             </div>
         </div>
     )

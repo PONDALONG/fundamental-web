@@ -48,36 +48,46 @@ function Assignment() {
           </div>
         </div>
         <div className='flex md:justify-end w-[200px]'>
-            <Button variant='contained' color='success' onClick={() => navigate('/teacher/assignment-detail')} >เพิ่มแบบฝึกหัด</Button>
+          <Button variant='contained' color='success' onClick={() => navigate('/teacher/assignment-detail')} >เพิ่มแบบฝึกหัด</Button>
         </div>
       </div>
 
-      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2'>
         {['', '', '', '', '', '', '', '', '',].map((m, index) => (
           <Card key={index} className='w-full relative'>
             <div className='absolute top-1 right-1 cursor-pointer'>
               <Tooltip title='สถานะ: เปิดรับ' placement='top'>
-                    <div className='w-4 h-4 rounded-full bg-green-500 ring-2 ring-green-400'>
+                <div className='w-4 h-4 rounded-full bg-green-500 ring-2 ring-green-400'>
 
-                    </div>
+                </div>
               </Tooltip>
-              
+
             </div>
             <CardHeader
               title={"LAB" + (index + 1)}
-              subheader="กำหนดส่ง 22 มกราคม 2566"
             />
-            {/* <CardContent>
-              <Typography variant="body1" color="text.secondary">
-                Introduction into Fundamental of Computer Engineering
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Lizards are a widespread group of squamate reptiles, with over 6,000
-                species, ranging across all continents except Antarctica
-              </Typography>
-            </CardContent> */}
-            <CardActions className='flex justify-between'>
-              <Button size="medium" variant='contained' color='info'>รายละเอียด</Button>
+            <CardContent>
+              <div className='w-full flex flex-col'>
+                <div className='flex gap-2 items-center'>
+                  <span>กำหนดส่ง:</span>
+                  <span>22 ธันวาคม 2566</span>
+                </div>
+                <div className='flex gap-2 items-center'>
+                  <span>ประเภทงาน:</span>
+                  <span>กลุ่ม</span>
+                </div>
+                <div className='flex gap-2 items-center'>
+                  <span>คะแนน:</span>
+                  <span>10</span>
+                </div>
+              </div>
+            </CardContent>
+            <CardActions className='flex flex-col sm:flex-row sm:justify-between items-end sm:items-end'>
+              <div className='flex flex-row gap-2'>
+                <Button size="medium" variant='contained' color='info' onClick={() => navigate(`/teacher/assignment-detail/${1}`)}>รายละเอียด</Button>
+                <Button size="medium" variant='contained' color='warning' onClick={() => navigate(`/teacher/submitted-assignment/${1}`)}>ตรวจงาน</Button>
+              </div>
+
               <Typography variant="caption" color="text.secondary">
                 15 มกราคม 2566
               </Typography>

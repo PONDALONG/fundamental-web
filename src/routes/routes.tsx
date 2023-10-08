@@ -13,6 +13,7 @@ const AssignmentDetailTeacherPage = lazy(() => import('../pages/Teacher/Assigmen
 const SubmittedAssignmentListPage = lazy(() => import('../pages/Teacher/SubbmitedAssignmentList'))
 const ProfileTeacher = lazy(() => import('../pages/Teacher/ProfileTeacher'))
 const SubmittedAssignmenttPage = lazy(() => import('../pages/Teacher/SubmittedAssignment'))
+const StudentProfilePage = lazy(() => import('../pages/Teacher/StudentProfile'))
 
 const AssignmentStudentPage = lazy(() => import('../pages/Student/Assignment'))
 const ProfileStudentPage = lazy(() => import('../pages/Student/ProfileStudent'))
@@ -72,16 +73,20 @@ export default function Routes() {
                     element: <AssignmentDetailTeacherPage />
                 },
                 {
-                    path: '/teacher/submitted-assignment',
+                    path: '/teacher/submitted-assignment/:id',
                     element: <SubmittedAssignmentListPage />
                 },
                 {
-                    path: '/teacher/submitted-assignment/:id',
+                    path: '/teacher/student-submitted/:id',
                     element: <SubmittedAssignmenttPage />
                 },
                 {
                     path: '/teacher/student',
                     element: <StudentTeacherPage />
+                },
+                {
+                    path: '/teacher/student/:id',
+                    element: <StudentProfilePage />
                 },
                 {
                     path: '/teacher/profile',

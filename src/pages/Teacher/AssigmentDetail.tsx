@@ -1,4 +1,4 @@
-import { Button, IconButton, Switch, TextField, Tooltip, Typography } from '@mui/material'
+import { Button, IconButton, Switch, TextField, Tooltip, Typography, Box } from '@mui/material'
 import { DateTimePicker } from '@mui/x-date-pickers'
 import * as yup from "yup";
 import { Formik } from "formik";
@@ -12,6 +12,11 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import MUIDataTable from 'mui-datatables'
 
 const assignmentDetailSchema = yup.object().shape({
   title: yup.string().required("กรุณากรอกชื่อแบบฝึกหัด"),
@@ -31,6 +36,74 @@ function AssigmentDetail() {
     due: dayjs(new Date()),
     score: ""
   })
+  const [studentGroup, setStudentGroup] = useState(
+    [
+      {
+        studentId: '123',
+        name: 'winai jaibun',
+        id: 1,
+        group: '',
+      },
+      {
+        studentId: '1234',
+        name: 'winai jaibun',
+        id: 2,
+        group: '',
+      },
+      {
+        studentId: '12345',
+        name: 'winai jaibun',
+        id: 3,
+        group: '',
+      },
+    ]
+  )
+  const columns = [
+    {
+      name: "studentId",
+      label: "รหัสนักศึกษา",
+      options: {
+        filter: false,
+        sort: false,
+      }
+    },
+    {
+      name: "name",
+      label: "ชื่อ-สกุล",
+      options: {
+        filter: false,
+        sort: false,
+        customBodyRender: (value: string, tableMeta: any, updateValue: any) => {
+          return (
+            <div className='flex flex-col'>
+              <span>{value}</span>
+            </div>
+          )
+        }
+      }
+    },
+    {
+      name: "group",
+      label: 'กลุ่ม',
+      options: {
+        filter: false,
+        sort: false,
+        customBodyRender: (value: number, tableMeta: any, updateValue: any,) => {
+          return (
+            <Box display={"flex"} flexDirection={{ xs: "column", sm: "row" }} gap={1} justifyContent={"center"} alignItems={"center"} width={{ xs: "100%", lg: "50%" }} maxWidth={"70px"}>
+              <TextField
+                variant="outlined"
+                type={"text"}
+                label="กลุ่ม"
+                onChange={(e) => updateValue(onInputStudentGroupChange(e.target.value, tableMeta.rowIndex))}
+                value={studentGroup[tableMeta.rowIndex].group}
+              ></TextField>
+            </Box>
+          )
+        }
+      }
+    }
+  ];
 
   useEffect(() => {
     console.log(id);
@@ -57,6 +130,18 @@ function AssigmentDetail() {
   const onSubmitAssigmentDetail = async (value: any) => {
     console.log(value);
   }
+
+  const onInputStudentGroupChange = (value: string, index: number) => {
+    let group = studentGroup
+    let newStudentGroup = group[index]
+    newStudentGroup.group = value
+    group[index] = newStudentGroup
+    setStudentGroup(group)
+    console.log(studentGroup);
+
+
+  }
+
   return (
     <div className='flex flex-col gap-2 px-2'>
       <div className='flex gap-2 my-3 font-bold'>
@@ -64,7 +149,7 @@ function AssigmentDetail() {
         <span className='text-gray-400'>{'>'}</span>
         <span className='text-gray-400'>Assignment Detail</span>
       </div>
-      <div className='w-full flex flex-col justify-center items-center gap-3 relative'>
+      <div className='w-full flex flex-col justify-center items-center gap-3 relative py-3'>
         <div className='absolute top-1 right-1 md:right-[20%] flex justify-center items-center'>
           <span className='hidden lg:block mr-2'>สถานะแบบฝึกหัด: </span>
           <span className='font-bold text-red-500'>ปิด</span>
@@ -119,13 +204,45 @@ function AssigmentDetail() {
               <div className='flex items-center gap-2'>
                 <label className='font-bold text-primary'>ประเภทงาน</label>
                 <RadioGroup
-                  defaultValue="invidual"
+                  defaultValue="INVIDUAL"
                   row
                 >
-                  <FormControlLabel value="invidual" control={<Radio />} label="เดี่ยว" />
-                  <FormControlLabel value="group" control={<Radio />} label="กลุ่ม" />
+                  <FormControlLabel value="INVIDUAL" control={<Radio />} label="เดี่ยว" />
+                  <FormControlLabel value="GROUP" control={<Radio />} label="กลุ่ม" />
                 </RadioGroup>
               </div>
+              {!!id && (
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                  >
+                    <Typography className='font-bold' >จัดการกลุ่ม</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails className='flex flex-col gap-2'>
+                    <div className='w-full'>
+                      <MUIDataTable
+                        title={"รายชื่อกลุ่มงาน"}
+                        data={studentGroup}
+                        columns={columns}
+                        options={{
+                          filter: false, print: false, downloadOptions: { filename: `รายชื่อนักเรียนที่ส่งงาน ecp1n 2/2566` },
+                          download: false,
+                          selectableRows: 'none',
+                          textLabels: {
+                            body: {
+                              noMatch: 'ไม่พบข้อมูล'
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className='flex justify-center items-center gap-2'>
+                      <Button type='submit' variant='contained' color='success' >บันทึก</Button>
+                    </div>
+                  </AccordionDetails>
+                </Accordion>
+              )}
+
               <div className='w-full'>
                 <TextEditor sendData={onContentTextChange} />
               </div>
