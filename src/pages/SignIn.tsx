@@ -5,6 +5,10 @@ import { Formik } from "formik";
 import BackgroundSignIn from '../assets/sign-in-bg.jpg'
 import { LoginUserModel } from '../types/LoginUserModel';
 import { successAlert } from '../utils/SweetAlert';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../stores/store';
+import { setUser } from '../stores/slice/user.slice';
+import { UserModel } from '../types/userModel';
 
 const loginSchema = yup.object().shape({
   username: yup.string().required("กรุณากรอกรหัสนักศึกษา"),
@@ -14,14 +18,23 @@ const loginSchema = yup.object().shape({
 function SignIn() {
   const initialLoginForm = new LoginUserModel()
 
+  const user: UserModel = useSelector((state: RootState) => state.userReducer)
+  const userDispatch = useDispatch()
+  console.log(user);
   async function onSubmitLogin(value: LoginUserModel) {
     if (value.username === 'admin' && value.password === 'admin') {
       successAlert('เข้าสู่ระบบสำเร็จ').then(() => {
-        localStorage.setItem('access-token', 'admin')
+        localStorage.setItem('access-token', 'www')
+        const newUser: UserModel = {
+          id: 1,
+          nameTh: 'ปปปป ปปปป',
+          nameEn: 'pppp pppp',
+          role: 'teacher'.toUpperCase()
+        }
+        userDispatch(setUser(newUser))
         window.location.href = '/teacher'
       })
-    }
-    
+    } 
   }
 
   return (

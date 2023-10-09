@@ -18,14 +18,14 @@ function SubbmitedAssignmentList() {
                 name: 'winai jaibun',
                 status: 'WAITING',
                 id: 1,
-                score: 0
+                score: 5
             },
             {
                 studentId: '5555555',
                 name: 'winai jaibun',
                 status: 'LATE',
                 id: 1,
-                score: 0
+                score: 5
             },
         ]
     )
@@ -113,6 +113,7 @@ function SubbmitedAssignmentList() {
                     data={submittedList}
                     columns={columns}
                     options={{
+                        elevation: 0,
                         filter: false, print: false, downloadOptions: { filename: `รายชื่อนักเรียนที่ส่งงาน ecp1n 2/2566` }, onDownload: (buildHead, buildBody, columns, data) => {
                             if (columns.length > 0) {
                                 columns.pop()
@@ -122,7 +123,12 @@ function SubbmitedAssignmentList() {
                                     d.data.pop()
                                 }
                             }
-                            return "\uFEFF" + '"1212","","","2255"\n' + buildHead(columns) + buildBody(data);
+                            let sum = 0
+                            for (let i of data) {
+                                
+                                sum += i.data[3]
+                            }                            
+                            return "\uFEFF" + buildHead(columns) + buildBody(data) + '\n' + `"","","รวม","${sum}"\n`;
                         },
                         selectableRows: 'none',
                         textLabels: {

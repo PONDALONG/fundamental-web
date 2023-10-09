@@ -25,6 +25,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import BookIcon from '@mui/icons-material/Book';
 import Logout from '@mui/icons-material/Logout';
 import { logoutAlert } from '../utils/SweetAlert';
+import { UserModel } from '../types/userModel';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../stores/store'
+import { clearUser, setUser } from '../stores/slice/user.slice';
 const drawerWidth = 240;
 
 interface Props {
@@ -39,6 +43,10 @@ export default function ProtectedTeacherRoute(props: Props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const navigate = useNavigate()
+
+  const user: UserModel = useSelector((state: RootState) => state.userReducer)
+  const userDispatch = useDispatch()
+  
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -56,6 +64,7 @@ export default function ProtectedTeacherRoute(props: Props) {
     logoutAlert().then((res) => {
       if (res.isConfirmed) {
         localStorage.removeItem('access-token')
+        userDispatch(clearUser())
         navigate('/')
       }
     })
@@ -181,7 +190,7 @@ export default function ProtectedTeacherRoute(props: Props) {
                   aria-haspopup="true"
                   aria-expanded={openMenu ? 'true' : undefined}
                 >
-                  <Avatar className='bg-secondary'>WS</Avatar>
+                  <Avatar className='bg-secondary'>{!!user.nameTh ? `${user.nameTh.split(' ')[0].charAt(0)} ${user.nameTh.split(' ')[1].charAt(0)}` : ''}</Avatar>
                 </IconButton>
                 <Menu
                   anchorEl={anchorEl}
@@ -194,7 +203,7 @@ export default function ProtectedTeacherRoute(props: Props) {
                   sx={{ width: 200 }}
                 >
                   <MenuItem>
-                    <Typography variant='inherit' noWrap>วินัย ศรีบุริน</Typography>
+                    <Typography variant='inherit' noWrap>{!!user.nameTh ? user.nameTh : ''}</Typography>
                   </MenuItem>
                   <MenuItem>
                     <Typography variant='inherit' onClick={() => navigate('/')} noWrap>ไปยังหน้านักเรียน</Typography>

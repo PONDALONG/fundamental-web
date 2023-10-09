@@ -21,6 +21,7 @@ const ProfileStudentPage = lazy(() => import('../pages/Student/ProfileStudent'))
 export default function Routes() {
     const auth = localStorage.getItem('access-token') || false
     const role: string = 'TEACHER'
+    // const role: string = 'STUDENT'
     let routes = useRoutes([
         {
             path: '',
@@ -96,7 +97,7 @@ export default function Routes() {
         },
         {
             path: '/',
-            element: (!auth && role.toUpperCase() !== 'TEACHER' || role.toUpperCase() !== 'STUDENT') ? <Outlet /> : <Navigate to={'/'} />,
+            element: (!auth && (role.toUpperCase() !== 'TEACHER' || role.toUpperCase() !== 'STUDENT')) ? <Outlet /> : <Navigate to={'/'} />,
             children: [
                 {
                     path: 'sign-in', element: <SignInPage />

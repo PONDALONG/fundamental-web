@@ -29,6 +29,7 @@ function AssigmentDetail() {
   const navigate = useNavigate()
   const { id } = useParams();
   const [assignmentStatus, setAssignmentStatus] = useState<boolean>(true)
+  const [assignmentType, setAssignmentType] = useState<string>('INVIDUAL')
   const contentText = useRef("")
   const [file, setFile] = useState<File[]>([])
   const [initAssignmentDetailForm, setAssignmentDetailForm] = useState({
@@ -137,9 +138,6 @@ function AssigmentDetail() {
     newStudentGroup.group = value
     group[index] = newStudentGroup
     setStudentGroup(group)
-    console.log(studentGroup);
-
-
   }
 
   return (
@@ -206,12 +204,13 @@ function AssigmentDetail() {
                 <RadioGroup
                   defaultValue="INVIDUAL"
                   row
+                  onChange={(e) => setAssignmentType(e.target.value)}
                 >
                   <FormControlLabel value="INVIDUAL" control={<Radio />} label="เดี่ยว" />
                   <FormControlLabel value="GROUP" control={<Radio />} label="กลุ่ม" />
                 </RadioGroup>
               </div>
-              {!!id && (
+              {(!!id && assignmentType === 'GROUP') && (
                 <Accordion>
                   <AccordionSummary
                     expandIcon={<ExpandMoreIcon />}
@@ -225,6 +224,7 @@ function AssigmentDetail() {
                         data={studentGroup}
                         columns={columns}
                         options={{
+                          elevation: 0,
                           filter: false, print: false, downloadOptions: { filename: `รายชื่อนักเรียนที่ส่งงาน ecp1n 2/2566` },
                           download: false,
                           selectableRows: 'none',

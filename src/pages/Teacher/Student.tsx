@@ -146,6 +146,7 @@ export default function Student() {
           data={studentList}
           columns={columns}
           options={{
+            elevation: 0,
             filter: false, print: false, downloadOptions: { filename: `รายชื่อนักศึกษากลุ่มเรียน ecp1n 2/2566` }, onDownload: (buildHead, buildBody, columns, data) => {
               if (columns.length > 0) {
                 columns.pop()
