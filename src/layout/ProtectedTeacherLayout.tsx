@@ -190,7 +190,8 @@ export default function ProtectedTeacherRoute(props: Props) {
                   aria-haspopup="true"
                   aria-expanded={openMenu ? 'true' : undefined}
                 >
-                  <Avatar className='bg-secondary'>{!!user.nameTh ? `${user.nameTh.split(' ')[0].charAt(0)} ${user.nameTh.split(' ')[1].charAt(0)}` : ''}</Avatar>
+                  {!user.image && <Avatar className='bg-secondary'>{!!user.nameTH ? user.nameTH : ''}</Avatar>}
+                  {!!user.image && <Avatar className='bg-secondary' src={`${import.meta.env.VITE_API_ENDPOINT}/${user.image}`}></Avatar>}
                 </IconButton>
                 <Menu
                   anchorEl={anchorEl}
@@ -202,11 +203,8 @@ export default function ProtectedTeacherRoute(props: Props) {
                   anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                   sx={{ width: 200 }}
                 >
-                  <MenuItem>
-                    <Typography variant='inherit' noWrap>{!!user.nameTh ? user.nameTh : ''}</Typography>
-                  </MenuItem>
-                  <MenuItem>
-                    <Typography variant='inherit' onClick={() => navigate('/')} noWrap>ไปยังหน้านักเรียน</Typography>
+                  <MenuItem onClick={() => navigate('/teacher/profile')}>
+                    <Typography variant='inherit' noWrap>{!!user.nameTH ? user.nameTH : ''}</Typography>
                   </MenuItem>
                   <Divider />
                   <MenuItem onClick={handleLogoutClick}>

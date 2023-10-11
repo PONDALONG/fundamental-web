@@ -25,6 +25,8 @@ import BookIcon from '@mui/icons-material/Book';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Logout from '@mui/icons-material/Logout';
 import { logoutAlert } from '../utils/SweetAlert';
+import { useDispatch } from 'react-redux';
+import { clearUser } from '../stores/slice/user.slice';
 const drawerWidth = 240;
 
 interface Props {
@@ -38,6 +40,7 @@ interface Props {
 export default function ProtectedStudentRoute(props: Props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const userDispatch = useDispatch()
   const navigate = useNavigate()
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -56,6 +59,7 @@ export default function ProtectedStudentRoute(props: Props) {
     logoutAlert().then((res) => {
       if (res.isConfirmed) {
         localStorage.removeItem('access-token')
+        userDispatch(clearUser())
         navigate('/')
       }
     })

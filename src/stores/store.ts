@@ -1,7 +1,7 @@
 import userSlice from './slice/user.slice';
-import  counterSlice from './slice/count.slice';
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { persistStore, persistReducer } from 'redux-persist'
+import authSlice, { isSignedIn, signOut } from './slice/auth.slice';
 import storage from 'redux-persist/lib/storage' // defaults to localStorage for web
  
 
@@ -10,10 +10,17 @@ const userPersistConfig = {
   storage,
 }
 
+const authPersistConfig = {
+  key: 'auth',
+  storage
+}
+
 const userReducer = persistReducer(userPersistConfig, userSlice)
+const authReducer = persistReducer(authPersistConfig, authSlice)
 
 const rootReducer = combineReducers({
-    userReducer
+    userReducer,
+    authReducer
 })
 
 export const store = configureStore({

@@ -2,7 +2,9 @@ import { Avatar, Button, Divider, Typography, TextField, Box } from '@mui/materi
 import React, { useState } from 'react'
 import * as yup from "yup";
 import { Formik } from "formik";
-
+import { useSelector } from 'react-redux';
+import { RootState } from '../../stores/store';
+import { ImageViewAlert } from '../../utils/SweetAlert'
 type PasswordModel = {
     old_pass: string,
     new_pass: string,
@@ -21,6 +23,7 @@ const passwordSchema = yup.object().shape({
     new_pass2: yup.string().required("กรุณากรอกยืนยันรหัสผ่านใหม่"),
 });
 function ProfileTeacher() {
+    const userImage = useSelector((state: RootState) => state.userReducer.image)
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [imagePreview, setImagePreview] = useState<string>('');
     const [userProfile, setUserProfile] = useState<any>({
@@ -45,7 +48,7 @@ function ProfileTeacher() {
 
     const onSubmitPassword = (values: PasswordModel) => {
         console.log(values);
-        
+
     }
     return (
         <div className='flex flex-col items-center gap-2 px-2 w-full'>
@@ -53,13 +56,16 @@ function ProfileTeacher() {
                 <div className='flex flex-col gap-3 items-center w-full px-3'>
                     <h2 className='text-secondary'>ข้อมูลส่วนตัว</h2>
                     <div className='flex flex-col items-center gap-5'>
+                        {(!!!imagePreview && !!!imageFile && !!userImage) && (
+                                <img src={`${import.meta.env.VITE_API_ENDPOINT}/${userImage}`} className='w-40 h-40 rounded-full border-solid border-secondary border-4 object-cover cursor-pointer' onClick={() => ImageViewAlert(`${import.meta.env.VITE_API_ENDPOINT}/${userImage}`)}></img>
+                        )}
                         {(!!imagePreview && !!imageFile) && (
                             <label htmlFor="upload-image">
                                 <img src={imagePreview} className='w-40 h-40 rounded-full border-solid border-secondary border-4 object-cover'></img>
                                 <input type="file" id="upload-image" onChange={handleFileChange} className='hidden' />
                             </label>
                         )}
-                        {(!!!imagePreview && !!!imageFile) && <Avatar className='w-40 h-40 bg-secondary'><Typography variant='h4'>WS</Typography></Avatar>}
+                        {(!!!imagePreview && !!!imageFile && !!!userImage) && <Avatar className='w-40 h-40 bg-secondary'><Typography variant='h4'>WS</Typography></Avatar>}
                         {(!!!imagePreview && !!!imageFile) && (
                             <div>
                                 <label htmlFor="upload-image" className='cursor-pointer p-2 bg-blue-500 rounded text-white hover:bg-blue-700 duration-300'>

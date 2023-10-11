@@ -1,6 +1,10 @@
 export class UserModel {
-    id: number = 0
-    nameTh:string = ""
-    nameEn:string = ""
-    role: string = "STUDENT"
+  userId: number = 0;
+  nameTH: string = "";
+  nameEN: string = "";
+  studentNo: string = "";
+  role: string = "STUDENT";
+  userStatus: string = "ACTIVE";
+  createDate: Date | string = "";
+  image: string | null = "";
 }

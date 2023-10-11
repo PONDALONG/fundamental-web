@@ -2,6 +2,9 @@ import { Navigate, Outlet, useRoutes } from "react-router-dom";
 import ProtectedTeacherRoute from "../layout/ProtectedTeacherLayout";
 import ProtectedStudentRoute from "../layout/ProtectedStudentLayout";
 import { lazy } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../stores/store";
+import { isSignedIn } from "../stores/slice/auth.slice";
 
 const DashboardTeacherPage = lazy(() => import('../pages/Teacher/Dashboard'))
 const SectionTeacherPage = lazy(() => import('../pages/Teacher/Section'))
@@ -19,13 +22,13 @@ const AssignmentStudentPage = lazy(() => import('../pages/Student/Assignment'))
 const ProfileStudentPage = lazy(() => import('../pages/Student/ProfileStudent'))
 
 export default function Routes() {
-    const auth = localStorage.getItem('access-token') || false
-    const role: string = 'TEACHER'
-    // const role: string = 'STUDENT'
+    const auth = !!localStorage.getItem('access-token') ? true : false
+    const role: string = useSelector((state: RootState) => state.userReducer.role)
+
     let routes = useRoutes([
         {
             path: '',
-            element: (auth && role.toUpperCase() === 'STUDENT' || role.toUpperCase() === 'TEACHER') ? <ProtectedStudentRoute /> : <Navigate to={'/sign-in'} />,
+            element: (auth && role.toUpperCase() === 'STUDENT') ? <ProtectedStudentRoute /> : <Navigate to={auth && role.toUpperCase() === 'TEACHER' ? '/teacher' : '/sign-in'} />,
             children: [
                 {
                     path: '',
@@ -43,7 +46,7 @@ export default function Routes() {
         },
         {
             path: "teacher",
-            element:  (auth && role.toUpperCase() === 'TEACHER')  ? <ProtectedTeacherRoute /> : <Navigate to={'/sign-in'} />,
+            element: (auth && role.toUpperCase() === 'TEACHER') ? <ProtectedTeacherRoute /> : <Navigate to={auth && role.toUpperCase() === 'STUDENT' ? '/' : '/sign-in'} />,
             children: [
                 {
                     path: '',
@@ -104,7 +107,7 @@ export default function Routes() {
                 },
                 {
                     path: '',
-                    element: <Navigate to={'/sign-in'}/>
+                    element: <Navigate to={'/sign-in'} />
                 }
             ]
         }

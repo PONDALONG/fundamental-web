@@ -1,4 +1,4 @@
 export class LoginUserModel {
-    username: string = ''
+    studentCode: string = ''
     password: string = ''
 }

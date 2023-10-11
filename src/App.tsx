@@ -8,10 +8,15 @@ import Loader from './components/Loader'
 import Routes from './routes/routes'
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import { waringAlert } from './utils/SweetAlert'
+import { useDispatch } from 'react-redux'
+import { clearUser } from './stores/slice/user.slice'
 
 function App() {
   const loadingModalRef = useRef<{ setOpen: (open: boolean) => void } | null>(null)
-  axios.defaults.baseURL = import.meta.env.VITE_API_ENDPOIN || "http://localhost:3001/api"
+  const userDispatch = useDispatch()
+  
+  axios.defaults.baseURL = import.meta.env.VITE_API_ENDPOINT || "http://localhost:3001/api"
   axios.interceptors.request.use(
     (config) => {
       if (loadingModalRef.current) {
@@ -43,8 +48,12 @@ function App() {
         loadingModalRef.current.setOpen(false)
       }
       if (error.response.status === 401) {
+        waringAlert(error.response.data.message)
         localStorage.removeItem("access-token");
+        userDispatch(clearUser())
+        window.location.href = '/'
       } else if (error.response.status === 400) {
+        waringAlert(error.response.data.message)
       }
     }
   );

@@ -4,37 +4,39 @@ import * as yup from "yup";
 import { Formik } from "formik";
 import BackgroundSignIn from '../assets/sign-in-bg.jpg'
 import { LoginUserModel } from '../types/LoginUserModel';
-import { successAlert } from '../utils/SweetAlert';
+import { successAlert, waringAlert } from '../utils/SweetAlert';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../stores/store';
 import { setUser } from '../stores/slice/user.slice';
 import { UserModel } from '../types/userModel';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const loginSchema = yup.object().shape({
-  username: yup.string().required("กรุณากรอกรหัสนักศึกษา"),
+  studentCode: yup.string().required("กรุณากรอกรหัสนักศึกษา"),
   password: yup.string().required("กรุณากรอกรหัสผ่าน"),
 })
 
 function SignIn() {
   const initialLoginForm = new LoginUserModel()
-
+  const navigate = useNavigate()
   const user: UserModel = useSelector((state: RootState) => state.userReducer)
   const userDispatch = useDispatch()
-  console.log(user);
+
   async function onSubmitLogin(value: LoginUserModel) {
-    if (value.username === 'admin' && value.password === 'admin') {
-      successAlert('เข้าสู่ระบบสำเร็จ').then(() => {
-        localStorage.setItem('access-token', 'www')
-        const newUser: UserModel = {
-          id: 1,
-          nameTh: 'ปปปป ปปปป',
-          nameEn: 'pppp pppp',
-          role: 'teacher'.toUpperCase()
+    axios.post('/user/login', value).then((res) => {
+      if (res) {
+        if (res.status == 200) {
+          successAlert('เข้าสู่ระบบสำเร็จ').then(() => {
+            const token = res.data.access_token as string
+            localStorage.setItem('access-token', token)
+            const userProfile = res.data.profile as UserModel
+            userDispatch(setUser(userProfile))
+            navigate( user.role === 'STUDENT' ? '/' : '/teacher')
+          })
         }
-        userDispatch(setUser(newUser))
-        window.location.href = '/teacher'
-      })
-    } 
+      }
+    })
   }
 
   return (
@@ -70,10 +72,10 @@ function SignIn() {
                   label="ชื่อผู้ใช้งาน"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  value={values.username}
-                  name="username"
-                  error={!!touched.username && !!errors.username}
-                  helperText={touched.username && errors.username}
+                  value={values.studentCode}
+                  name="studentCode"
+                  error={!!touched.studentCode && !!errors.studentCode}
+                  helperText={touched.studentCode && errors.studentCode}
                 ></TextField>
                 <TextField
                   variant="outlined"
