@@ -1,11 +1,16 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import 'quill/dist/quill.snow.css'
 import ReactQuill from 'react-quill'
 type TextEditorInput = {
     sendData: (content: string) => void,
+    data: string
   }
   
-function TextEditor({ sendData }: TextEditorInput) {
+function TextEditor({ sendData, data }: TextEditorInput) {
+
+    useEffect(() => {
+    }, [])
+
     const modules = {
         toolbar: [
             [{ size: ["small", false, "large", "huge"] }],
@@ -38,6 +43,7 @@ function TextEditor({ sendData }: TextEditorInput) {
         modules={modules}
         formats={formats}
         placeholder="เพิ่มคำอธิบาย...."
+        value={!!data ? data : ''}
         onChange={handleProcedureContentChange}
         style={{ height: "300px", width: '100%', maxWidth: '100%' }}
       >

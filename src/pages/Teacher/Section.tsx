@@ -51,11 +51,10 @@ function Section() {
   }
 
   const handleDialogClose = (isFetch: boolean = false) => {
-    console.log(isFetch);
-
     setDialogOpen(false)
     setSectionId(null)
     if (isFetch) {
+      getFilterList()
       getSectionList()
     }
   }

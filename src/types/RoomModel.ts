@@ -5,3 +5,16 @@ export class RoomModel {
   roomTerm: number = 1
   roomStatus: string = "CLOSED"
 }
+
+
+export class GroupListModel  {
+  roomGroup: string = ""
+}
+
+export class YearListModel  {
+  roomYear: string = ""
+}
+
+export class TermListModel {
+  roomTerm: number | string = ""
+}

@@ -11,6 +11,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { waringAlert } from './utils/SweetAlert'
 import { useDispatch } from 'react-redux'
 import { clearUser } from './stores/slice/user.slice'
+import "dayjs/locale/th";
 
 function App() {
   const loadingModalRef = useRef<{ setOpen: (open: boolean) => void } | null>(null)
@@ -60,7 +61,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='th'>
         <div className="app" style={{ maxWidth: "100vw", maxHeight: "100vh" }}>
           <Suspense fallback={<Loader />}>
             <Routes />

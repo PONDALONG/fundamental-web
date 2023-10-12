@@ -7,7 +7,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import TextEditor from '../../components/TextEditor'
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ensureRemove } from '../../utils/SweetAlert';
+import { ensureRemove, successAlert, waringAlert } from '../../utils/SweetAlert';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -17,26 +17,26 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MUIDataTable from 'mui-datatables'
+import axios from 'axios';
+import { AssignmentModel } from '../../types/AssignmentModel';
 
 const assignmentDetailSchema = yup.object().shape({
-  title: yup.string().required("กรุณากรอกชื่อแบบฝึกหัด"),
-  due: yup.string().required("กรุณาเลือกวันกำหนดส่ง"),
-  score: yup.number().required('กรุณากรอกคะแนนแบบฝึกหัด')
+  assignmentName: yup.string().required("กรุณากรอกชื่อแบบฝึกหัด"),
+  assignmentScore: yup.number().required('กรุณากรอกคะแนนแบบฝึกหัด')
 })
 
 
 function AssigmentDetail() {
   const navigate = useNavigate()
   const { id } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams()
   const [assignmentStatus, setAssignmentStatus] = useState<boolean>(true)
-  const [assignmentType, setAssignmentType] = useState<string>('INVIDUAL')
+  const [assignmentType, setAssignmentType] = useState<string>('INDIVIDUAL')
+  const [endDate, setEndDate] = useState(dayjs(new Date()))
   const contentText = useRef("")
   const [file, setFile] = useState<File[]>([])
-  const [initAssignmentDetailForm, setAssignmentDetailForm] = useState({
-    title: "",
-    due: dayjs(new Date()),
-    score: ""
-  })
+  const [assignmentDetailForm, setAssignmentDetailForm] = useState<AssignmentModel>(new AssignmentModel())
+  const [resourceDelete, setResourceDelete] = useState<number[]>([])
   const [studentGroup, setStudentGroup] = useState(
     [
       {
@@ -107,8 +107,25 @@ function AssigmentDetail() {
   ];
 
   useEffect(() => {
-    console.log(id);
-  }, [assignmentStatus])
+    if (!searchParams.get('group') || !searchParams.get('year') || !searchParams.get('term') || !searchParams.get('roomId')) {
+      // navigate(-1)
+    }
+    if (!!id) {
+      findById(id)
+    }
+  }, [])
+
+  const findById = async (id: string | number) => {
+    try {
+      const response = await axios.get(`/assignment/find?assignmentId=${id}`)
+      if (response && response.status === 200) {
+        setAssignmentDetailForm(response.data as AssignmentModel)
+      }
+
+    } catch (error) {
+
+    }
+  }
 
   const onContentTextChange = (data: string) => {
     contentText.current = data
@@ -128,8 +145,108 @@ function AssigmentDetail() {
 
   }
 
-  const onSubmitAssigmentDetail = async (value: any) => {
-    console.log(value);
+  const onRemoveResouce = async(fielResourceId: number) => {
+    const ensure = await ensureRemove('ต้องการลบไฟล์ใช่หรือไม่')
+    if (ensure.isConfirmed) {
+      setResourceDelete([...resourceDelete, fielResourceId])
+      const assignment = assignmentDetailForm
+      assignment.fileResources = assignment.fileResources.filter((resource) => resource.fileResourceId != fielResourceId)
+      setAssignmentDetailForm(assignment)
+    }
+  }
+
+
+
+  const onSubmitAssigmentDetail = async (value: AssignmentModel) => {
+    // console.log(value.assignmentName);
+    // console.log(value.assignmentScore);
+    // console.log(assignmentStatus);
+    // console.log(assignmentType);
+    // console.log(endDate);
+    // console.log(value.assignmentId);
+    
+
+    if (isNaN(Number(value.assignmentScore)) || Number(value.assignmentScore) <= 0) {
+      waringAlert('กรุณากรอกคะแนน')
+      return
+    }
+
+    const assignment = new AssignmentModel()
+    assignment.assignmentName = value.assignmentName
+    assignment.assignmentDescription = contentText.current
+    assignment.assignmentScore = Number(value.assignmentScore)
+    assignment.assignmentEndDate = endDate.toDate().toISOString()
+    assignment.assignmentStatus = assignmentStatus ? 'OPEN' : 'CLOSED'
+    assignment.assignmentType = assignmentType
+    assignment.assignmentStartDate = new Date().toISOString()
+    assignment.assignmentId = value.assignmentId
+    assignment.roomId = value.roomId
+    console.log(assignment);
+    
+    if (!!id) {
+      await updateAssignment(assignment)
+    } else {
+      await createAssignment(assignment)
+    }
+
+  }
+
+  const updateAssignment = async(data: AssignmentModel) => {
+    try {
+      let formData = new FormData()
+      formData.append('assignmentId', data.assignmentId.toString())
+      formData.append('assignmentName', data.assignmentName)
+      formData.append('assignmentDescription', data.assignmentDescription)
+      formData.append('assignmentScore', data.assignmentScore.toString())
+      formData.append('assignmentStartDate', data.assignmentStartDate.toString())
+      formData.append('assignmentEndDate', data.assignmentEndDate.toString())
+      formData.append('assignmentType', data.assignmentType)
+      formData.append('assignmentStatus', data.assignmentStatus)
+      formData.append('deleteFileIds', JSON.stringify(resourceDelete))
+      formData.append('roomId', String(data.roomId))
+      if (file && file.length > 0) {
+        for (let f of file) {
+          formData.append('files', f)
+        }
+      }
+      const response = await axios.post('/assignment/update', formData)
+      if (response && response.status === 200) {
+        await successAlert(response.data.message)
+        if (!!id) {
+          findById(id)
+        }
+      }
+    } catch (error) {
+    }
+  }
+
+  const createAssignment = async(data: AssignmentModel) => {
+    try {
+      let formData = new FormData()
+      formData.append('assignmentId', data.assignmentId.toString())
+      formData.append('assignmentName', data.assignmentName)
+      formData.append('assignmentDescription', data.assignmentDescription)
+      formData.append('assignmentScore', data.assignmentScore.toString())
+      formData.append('assignmentStartDate', data.assignmentStartDate.toString())
+      formData.append('assignmentEndDate', data.assignmentEndDate.toString())
+      formData.append('assignmentType', data.assignmentType)
+      formData.append('assignmentStatus', data.assignmentStatus)
+      formData.append('roomId', String(data.roomId))
+      if (file && file.length > 0) {
+        for (let f of file) {
+          formData.append('files', f)
+        }
+      }
+      const response = await axios.post('/assignment/create', formData)
+      if (response && response.status === 200) {
+        await successAlert(response.data.message)
+        if (response.data.assignmentId) {
+          navigate(`/teacher/assignment-detail/${response.data.assignmentId as number}`)
+        }
+      }
+    } catch (error) {
+      
+    }
   }
 
   const onInputStudentGroupChange = (value: string, index: number) => {
@@ -143,7 +260,7 @@ function AssigmentDetail() {
   return (
     <div className='flex flex-col gap-2 px-2'>
       <div className='flex gap-2 my-3 font-bold'>
-        <span className='text-gray-400 hover:text-gray-700 duration-300 cursor-pointer' onClick={() => navigate('/teacher/assignment')}>Assignment</span>
+        <span className='text-gray-400 hover:text-gray-700 duration-300 cursor-pointer' onClick={() => navigate(`/teacher/assignment?group=${searchParams.get('group')}&year=${searchParams.get('year')}&term=${searchParams.get('term')}`)}>Assignment</span>
         <span className='text-gray-400'>{'>'}</span>
         <span className='text-gray-400'>Assignment Detail</span>
       </div>
@@ -156,8 +273,10 @@ function AssigmentDetail() {
         </div>
         <Formik
           onSubmit={onSubmitAssigmentDetail}
-          initialValues={initAssignmentDetailForm}
-          validationSchema={assignmentDetailSchema}>
+          initialValues={assignmentDetailForm}
+          validationSchema={assignmentDetailSchema}
+          enableReinitialize
+        >
           {({
             values,
             errors,
@@ -172,10 +291,10 @@ function AssigmentDetail() {
                 <TextField label="ชื่อแบบฝึกหัด" variant="standard" required
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  name='title'
-                  value={values.title}
-                  error={!!touched.title && !!errors.title}
-                  helperText={touched.title && errors.title}
+                  name='assignmentName'
+                  value={values.assignmentName}
+                  error={!!touched.assignmentName && !!errors.assignmentName}
+                  helperText={touched.assignmentName && errors.assignmentName}
                 />
               </div>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
@@ -183,8 +302,8 @@ function AssigmentDetail() {
                   <label className='font-bold text-primary'>กำหนดส่ง</label>
                   <DateTimePicker
                     label="กำหนดส่ง"
-                    defaultValue={initAssignmentDetailForm.due}
-                    value={values.due}
+                    defaultValue={endDate}
+                    onChange={(e) => setEndDate(dayjs(e))}
                   />
                 </div>
                 <div className='flex flex-col gap-2'>
@@ -192,21 +311,21 @@ function AssigmentDetail() {
                   <TextField label="คะแนน" variant="outlined" required
                     onBlur={handleBlur}
                     onChange={handleChange}
-                    name='score'
-                    value={values.score}
-                    error={!!touched.score && !!errors.score}
-                    helperText={touched.score && errors.score}
+                    name='assignmentScore'
+                    value={values.assignmentScore}
+                    error={!!touched.assignmentScore && !!errors.assignmentScore}
+                    helperText={touched.assignmentScore && errors.assignmentScore}
                   />
                 </div>
               </div>
               <div className='flex items-center gap-2'>
                 <label className='font-bold text-primary'>ประเภทงาน</label>
                 <RadioGroup
-                  defaultValue="INVIDUAL"
+                  defaultValue="INDIVIDUAL"
                   row
                   onChange={(e) => setAssignmentType(e.target.value)}
                 >
-                  <FormControlLabel value="INVIDUAL" control={<Radio />} label="เดี่ยว" />
+                  <FormControlLabel value="INDIVIDUAL" control={<Radio />} label="เดี่ยว" />
                   <FormControlLabel value="GROUP" control={<Radio />} label="กลุ่ม" />
                 </RadioGroup>
               </div>
@@ -225,7 +344,7 @@ function AssigmentDetail() {
                         columns={columns}
                         options={{
                           elevation: 0,
-                          filter: false, print: false, downloadOptions: { filename: `รายชื่อนักเรียนที่ส่งงาน ecp1n 2/2566` },
+                          filter: false, print: false,
                           download: false,
                           selectableRows: 'none',
                           textLabels: {
@@ -244,17 +363,29 @@ function AssigmentDetail() {
               )}
 
               <div className='w-full'>
-                <TextEditor sendData={onContentTextChange} />
+                <TextEditor sendData={onContentTextChange} data={assignmentDetailForm.assignmentDescription} />
               </div>
               <div className='w-full flex flex-col gap-2 mt-16 lg:mt-10 py-3'>
                 <span className='font-bold text-primary'>อัปโหลดไฟล์</span>
                 <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2'>
+                  {(assignmentDetailForm.fileResources && assignmentDetailForm.fileResources.length > 0) 
+                  && assignmentDetailForm.fileResources.map((resource, index) => (
+                    <div key={index} className='relative group h-20 w-full border-slate-400 border-solid border-[1px] rounded-lg flex flex-col justify-center items-center cursor-pointer hover:bg-slate-500 duration-300 break-all'>
+                      <DeleteIcon
+                        onClick={() => onRemoveResouce(resource.fileResourceId)}
+                        className='absolute top-1 right-1 w-5 h-5 hover:text-red-500 hover:scale-150 duration-1000 cursor-pointer' />
+                       <Typography variant='inherit' noWrap>{resource.fileResourceName}</Typography>
+                      <a className='text-xs' href={`${import.meta.env.VITE_API_ENDPOINT}/${resource.fileResourcePath}`}>ดาวน์โหลด</a>
+                    </div>
+                  ))}
+
                   {(file && file.length > 0) && file.map((f: File, index) => (
-                    <div key={index} className='relative group h-20 w-full border-slate-400 border-solid border-[1px] rounded-lg flex justify-center items-center cursor-pointer hover:bg-slate-500 duration-300'>
+                    <div key={index} className='relative group h-20 w-full border-slate-400 border-solid border-[1px] rounded-lg flex justify-center items-center cursor-pointer hover:bg-slate-500 duration-300 break-all'>
                       <DeleteIcon
                         onClick={() => onRemoveFile(index)}
                         className='absolute top-1 right-1 w-5 h-5 hover:text-red-500 hover:scale-150 duration-1000 cursor-pointer' />
-                      {f.name}
+                      
+                      <Typography variant='inherit' noWrap>{f.name}</Typography>
                     </div>
                   ))}
                   <Tooltip title="อัปโหลดไฟล์" placement='top-end'>
@@ -268,8 +399,8 @@ function AssigmentDetail() {
                 </div>
               </div>
               <div className='flex justify-center items-center gap-2'>
-                <Button type='submit' variant='contained' color='success' >บันทึก</Button>
-                <Button variant='contained' color='inherit' onClick={() => navigate('/teacher/assignment')}>ยกเลิก</Button>
+                <Button type='submit' variant='contained' color='success'>บันทึก</Button>
+                <Button variant='contained' color='inherit' onClick={() => navigate(`/teacher/assignment?group=${searchParams.get('group')}&year=${searchParams.get('year')}&term=${searchParams.get('term')}`)}>ยกเลิก</Button>
               </div>
             </form>
           )}
