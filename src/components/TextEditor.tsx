@@ -1,14 +1,16 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import 'quill/dist/quill.snow.css'
 import ReactQuill from 'react-quill'
+import {forwardRef, useImperativeHandle, useRef} from 'react';
 type TextEditorInput = {
     sendData: (content: string) => void,
     data: string
   }
-  
-function TextEditor({ sendData, data }: TextEditorInput) {
 
+const TextEditor  = ({ sendData, data }: TextEditorInput) => {
     useEffect(() => {
+        console.log(data);
+        
     }, [])
 
     const modules = {
@@ -43,7 +45,7 @@ function TextEditor({ sendData, data }: TextEditorInput) {
         modules={modules}
         formats={formats}
         placeholder="เพิ่มคำอธิบาย...."
-        value={!!data ? data : ''}
+        value={data}
         onChange={handleProcedureContentChange}
         style={{ height: "300px", width: '100%', maxWidth: '100%' }}
       >

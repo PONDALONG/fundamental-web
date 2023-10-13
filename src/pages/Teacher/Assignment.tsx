@@ -19,6 +19,7 @@ function Assignment() {
   const [selectGroup, setSelectGroup] = useState<string>('')
   const [selectYear, setSelectYear] = useState<string>('')
   const [selectTerm, setSelectTerm] = useState<number | string>('')
+  const [roomId, setRoomId] = useState<number | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
   const params = {
     group: searchParams.get('group') || null,
@@ -30,9 +31,13 @@ function Assignment() {
 
 
   useEffect(() => {
+    checkParams()
     fetchGroup()
+    console.log(selectGroup, selectYear, selectTerm);
+
     if (!!selectGroup && !!selectYear && !!selectTerm) {
       fetchAssignment(selectGroup, selectYear, selectTerm)
+      findRoomId(selectGroup, selectYear, selectTerm)
     }
   }, [selectGroup, selectYear, selectTerm])
 
@@ -54,15 +59,27 @@ function Assignment() {
     setSearchParams(searchParams)
   }
 
-  const checkParams = () => {
-    if (!!params.group && !!params.roomId ){
-      
+  const checkParams = async () => {
+    if (!!params.group && !!params.term && !!params.year) {
+      const responseYear = await axios(`/room/filterYears?group=${params.group}`)
+      if (responseYear && responseYear.status === 200) {
+        setYearList(responseYear.data)
+        const responseTerm = await axios.get(`/room/filterTerms?group=${params.group}&year=${params.year}`)
+        if (responseTerm && responseTerm.status === 200) {
+          setTermList(responseTerm.data)
+          setSelectGroup(params.group)
+          setSelectYear(params.year)
+          setSelectTerm(params.term)
+        }
+      }
     }
   }
 
   const onSelectGroup = async (group: string) => {
     clearParams()
     setSelectGroup(group)
+    setSelectTerm('')
+    setSelectYear('')
     setYearList([])
     setTermList([])
     const response = await axios.get(`/room/filterYears?group=${group}`)
@@ -75,6 +92,7 @@ function Assignment() {
     clearParams()
     try {
       setSelectYear(year)
+      setSelectTerm('')
       setTermList([])
       const response = await axios.get(`/room/filterTerms?group=${group}&year=${year}`)
       if (response && response.status === 200) {
@@ -106,6 +124,19 @@ function Assignment() {
     }
   }
 
+  const findRoomId = async(group: string, year: string, term: number | string) => {
+    try {
+      let response = await axios.get(`/room/find-YGT?roomGroup=${group}&roomYear=${year}&roomTerm=${term}`)
+      if (response && response.status === 200) {
+        if (response.data.roomId) {
+          setRoomId(response.data.roomId as number)
+        }
+      }
+    } catch (error) {
+      
+    }
+  }
+
   return (
     <div className='flex flex-col gap-2 px-2 w-full'>
       <h2 className='text-secondary'>แบบฝึกหัด</h2>
@@ -116,6 +147,7 @@ function Assignment() {
             <FormControl variant='standard'>
               <Select
                 defaultValue={''}
+                value={selectGroup}
               >
 
                 {(groupList && groupList.length > 0) && groupList.map((group, index) => (
@@ -129,6 +161,7 @@ function Assignment() {
             <FormControl variant='standard'>
               <Select
                 defaultValue={''}
+                value={selectYear}
               >
                 {(yearList && yearList.length > 0) && yearList.map((year, index) => (
                   <MenuItem key={index} value={year.roomYear} onClick={() => onSelectYear(selectGroup, year.roomYear)} >{year.roomYear}</MenuItem>
@@ -141,6 +174,7 @@ function Assignment() {
             <FormControl variant='standard'>
               <Select
                 defaultValue={''}
+                value={selectTerm}
               >
                 {(termList && termList.length > 0) && termList.map((term, index) => (
                   <MenuItem key={index} value={term.roomTerm} onClick={() => onSelectTerm(term.roomTerm)} >{term.roomTerm}</MenuItem>
@@ -150,7 +184,7 @@ function Assignment() {
           </div>
         </div>
         <div className='flex md:justify-end w-[200px]'>
-          <Button variant='contained' color='success' onClick={() => navigate('/teacher/assignment-detail')} >เพิ่มแบบฝึกหัด</Button>
+          <Button variant='contained' color='success' onClick={() => navigate(`/teacher/assignment-detail?group=${selectGroup}&year=${selectYear}&term=${selectTerm}&roomId=${roomId ? roomId : ''}`)} >เพิ่มแบบฝึกหัด</Button>
         </div>
       </div>
 
@@ -158,10 +192,18 @@ function Assignment() {
         {(assignmentList && assignmentList.length > 0) && assignmentList.map((assignment, index) => (
           <Card key={assignment.assignmentId} className='w-full relative'>
             <div className='absolute top-1 right-1 cursor-pointer'>
-              <Tooltip title='สถานะ: เปิดรับ' placement='top'>
-                <div className='w-4 h-4 rounded-full bg-green-500 ring-2 ring-green-400'>
-                </div>
-              </Tooltip>
+              {assignment.assignmentStatus.toUpperCase() === 'OPEN' && (
+                <Tooltip title='สถานะ: เปิดรับ' placement='top'>
+                  <div className='w-4 h-4 rounded-full bg-green-500 ring-2 ring-green-400'>
+                  </div>
+                </Tooltip>
+              )}
+              {assignment.assignmentStatus.toUpperCase() === 'CLOSE' && (
+                <Tooltip title='สถานะ: ปิดรับ' placement='top'>
+                  <div className='w-4 h-4 rounded-full bg-red-500 ring-2 ring-red-400'>
+                  </div>
+                </Tooltip>
+              )}
             </div>
             <CardHeader
               title={assignment.assignmentName}
@@ -170,12 +212,12 @@ function Assignment() {
               <div className='w-full flex flex-col'>
                 <div className='flex gap-2 items-center'>
                   <span>กำหนดส่ง:</span>
-                  <span>{ dayjs(new Date(assignment.assignmentEndDate)).locale('th').format('DD MMMM BBBB') }</span>
+                  <span>{dayjs(new Date(assignment.assignmentEndDate)).locale('th').format('DD MMMM BBBB')}</span>
                 </div>
                 <div className='flex gap-2 items-center'>
                   <span>ประเภทงาน:</span>
-                  { assignment.assignmentType.toUpperCase() === 'INDIVIDUAL' && <span>เดี่ยว</span>}
-                  { assignment.assignmentType.toUpperCase() === 'GROUP' && <span>กลุ่ม</span>}
+                  {assignment.assignmentType.toUpperCase() === 'INDIVIDUAL' && <span>เดี่ยว</span>}
+                  {assignment.assignmentType.toUpperCase() === 'GROUP' && <span>กลุ่ม</span>}
                 </div>
                 <div className='flex gap-2 items-center'>
                   <span>คะแนน:</span>
@@ -185,12 +227,12 @@ function Assignment() {
             </CardContent>
             <CardActions className='flex flex-col sm:flex-row sm:justify-between items-end sm:items-end'>
               <div className='flex flex-row gap-2'>
-                <Button size="medium" variant='contained' color='info' onClick={() => navigate(`/teacher/assignment-detail/${assignment.assignmentId}?group=${selectGroup}&year=${selectYear}&term=${selectTerm}&roomId=${assignment.roomId}`)}>รายละเอียด</Button>
-                <Button size="medium" variant='contained' color='warning' onClick={() => navigate(`/teacher/submitted-assignment/${assignment.assignmentId}`)}>ตรวจงาน</Button>
+                <Button size="medium" variant='contained' color='info' onClick={() => navigate(`/teacher/assignment-detail/${assignment.assignmentId}?group=${selectGroup}&year=${selectYear}&term=${selectTerm}&roomId=${roomId ? roomId : ''}`)}>รายละเอียด</Button>
+                <Button size="medium" variant='contained' color='warning' onClick={() => navigate(`/teacher/submitted-assignment/${assignment.assignmentId}?group=${selectGroup}&year=${selectYear}&term=${selectTerm}&roomId=${roomId ? roomId : ''}`)}>ตรวจงาน</Button>
               </div>
 
               <Typography variant="caption" color="text.secondary">
-                { dayjs(new Date(assignment.assignmentStartDate)).locale('th').format('DD MMMM BBBB') }
+                {dayjs(new Date(assignment.assignmentStartDate)).locale('th').format('DD MMMM BBBB')}
               </Typography>
             </CardActions>
           </Card>

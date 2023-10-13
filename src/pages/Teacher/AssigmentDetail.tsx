@@ -30,10 +30,17 @@ function AssigmentDetail() {
   const navigate = useNavigate()
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams()
+  const params = {
+    group: searchParams.get('group') || null,
+    year: searchParams.get('year') || null,
+    term: searchParams.get('term') || null,
+    roomId: searchParams.get('roomId') || null,
+  }
   const [assignmentStatus, setAssignmentStatus] = useState<boolean>(true)
   const [assignmentType, setAssignmentType] = useState<string>('INDIVIDUAL')
   const [endDate, setEndDate] = useState(dayjs(new Date()))
   const contentText = useRef("")
+  const [description, setDescription] = useState('')
   const [file, setFile] = useState<File[]>([])
   const [assignmentDetailForm, setAssignmentDetailForm] = useState<AssignmentModel>(new AssignmentModel())
   const [resourceDelete, setResourceDelete] = useState<number[]>([])
@@ -107,8 +114,8 @@ function AssigmentDetail() {
   ];
 
   useEffect(() => {
-    if (!searchParams.get('group') || !searchParams.get('year') || !searchParams.get('term') || !searchParams.get('roomId')) {
-      // navigate(-1)
+    if (!params.group || !params.year || !params.term || !params.roomId) {
+      navigate('/teacher/assignment')
     }
     if (!!id) {
       findById(id)
@@ -120,6 +127,8 @@ function AssigmentDetail() {
       const response = await axios.get(`/assignment/find?assignmentId=${id}`)
       if (response && response.status === 200) {
         setAssignmentDetailForm(response.data as AssignmentModel)
+        // setDescription(assignmentDetailForm.assignmentDescription)
+        contentText.current = response.data.assignmentDescription
       }
 
     } catch (error) {
@@ -129,6 +138,9 @@ function AssigmentDetail() {
 
   const onContentTextChange = (data: string) => {
     contentText.current = data
+    console.log(contentText.current);
+    // setDescription(data)
+    
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -164,19 +176,20 @@ function AssigmentDetail() {
     // console.log(assignmentType);
     // console.log(endDate);
     // console.log(value.assignmentId);
+    console.log('before form =>', contentText.current);
     
 
     if (isNaN(Number(value.assignmentScore)) || Number(value.assignmentScore) <= 0) {
       waringAlert('กรุณากรอกคะแนน')
       return
     }
-
     const assignment = new AssignmentModel()
     assignment.assignmentName = value.assignmentName
+    // assignment.assignmentDescription = description
     assignment.assignmentDescription = contentText.current
     assignment.assignmentScore = Number(value.assignmentScore)
     assignment.assignmentEndDate = endDate.toDate().toISOString()
-    assignment.assignmentStatus = assignmentStatus ? 'OPEN' : 'CLOSED'
+    assignment.assignmentStatus = assignmentStatus ? 'OPEN' : 'CLOSE'
     assignment.assignmentType = assignmentType
     assignment.assignmentStartDate = new Date().toISOString()
     assignment.assignmentId = value.assignmentId
@@ -231,7 +244,7 @@ function AssigmentDetail() {
       formData.append('assignmentEndDate', data.assignmentEndDate.toString())
       formData.append('assignmentType', data.assignmentType)
       formData.append('assignmentStatus', data.assignmentStatus)
-      formData.append('roomId', String(data.roomId))
+      formData.append('roomId', String(params.roomId))
       if (file && file.length > 0) {
         for (let f of file) {
           formData.append('files', f)
@@ -241,7 +254,7 @@ function AssigmentDetail() {
       if (response && response.status === 200) {
         await successAlert(response.data.message)
         if (response.data.assignmentId) {
-          navigate(`/teacher/assignment-detail/${response.data.assignmentId as number}`)
+          window.location.href = `/teacher/assignment-detail/${response.data.assignmentId as number}?group=${params.group}&year=${params.year}&term=${params.term}&roomId=${!!params.roomId ? params.roomId : ''}`
         }
       }
     } catch (error) {
@@ -260,7 +273,7 @@ function AssigmentDetail() {
   return (
     <div className='flex flex-col gap-2 px-2'>
       <div className='flex gap-2 my-3 font-bold'>
-        <span className='text-gray-400 hover:text-gray-700 duration-300 cursor-pointer' onClick={() => navigate(`/teacher/assignment?group=${searchParams.get('group')}&year=${searchParams.get('year')}&term=${searchParams.get('term')}`)}>Assignment</span>
+        <span className='text-gray-400 hover:text-gray-700 duration-300 cursor-pointer' onClick={() => navigate(`/teacher/assignment?group=${params.group}&year=${params.year}&term=${params.term}&roomId=${!!params.roomId ? params.roomId : ''}`)}>Assignment</span>
         <span className='text-gray-400'>{'>'}</span>
         <span className='text-gray-400'>Assignment Detail</span>
       </div>
@@ -363,7 +376,8 @@ function AssigmentDetail() {
               )}
 
               <div className='w-full'>
-                <TextEditor sendData={onContentTextChange} data={assignmentDetailForm.assignmentDescription} />
+                <TextEditor sendData={onContentTextChange} data={contentText.current} />
+                {/* <TextEditor sendData={onContentTextChange} data={assignmentDetailForm.assignmentDescription} /> */}
               </div>
               <div className='w-full flex flex-col gap-2 mt-16 lg:mt-10 py-3'>
                 <span className='font-bold text-primary'>อัปโหลดไฟล์</span>
@@ -400,7 +414,7 @@ function AssigmentDetail() {
               </div>
               <div className='flex justify-center items-center gap-2'>
                 <Button type='submit' variant='contained' color='success'>บันทึก</Button>
-                <Button variant='contained' color='inherit' onClick={() => navigate(`/teacher/assignment?group=${searchParams.get('group')}&year=${searchParams.get('year')}&term=${searchParams.get('term')}`)}>ยกเลิก</Button>
+                <Button variant='contained' color='inherit' onClick={() => navigate(`/teacher/assignment?group=${params.group}&year=${params.year}&term=${params.term}&roomId=${!!params.roomId ? params.roomId : ''}`)}>ยกเลิก</Button>
               </div>
             </form>
           )}
