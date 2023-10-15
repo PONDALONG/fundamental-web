@@ -70,18 +70,18 @@ export default function ProtectedTeacherRoute(props: Props) {
     })
   }
   const sideBarMenu = [
-    {
-      title: 'แดชบอร์ด',
-      to: '/teacher/dashboard',
-      isShow: true,
-      icon: <DashboardIcon />
-    },
-    {
-      title: 'เนื้อหารายวิชา',
-      to: '/teacher/content',
-      isShow: true,
-      icon: <BookIcon />
-    },
+    // {
+    //   title: 'แดชบอร์ด',
+    //   to: '/teacher/dashboard',
+    //   isShow: true,
+    //   icon: <DashboardIcon />
+    // },
+    // {
+    //   title: 'เนื้อหารายวิชา',
+    //   to: '/teacher/content',
+    //   isShow: true,
+    //   icon: <BookIcon />
+    // },
     {
       title: 'กลุ่มเรียน',
       to: '/teacher/section',

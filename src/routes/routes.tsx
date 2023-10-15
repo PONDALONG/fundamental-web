@@ -50,7 +50,7 @@ export default function Routes() {
             children: [
                 {
                     path: '',
-                    element: <Navigate to={'/teacher/dashboard'}></Navigate>
+                    element: <Navigate to={'/teacher/section'}></Navigate>
                 },
                 {
                     path: '/teacher/dashboard',

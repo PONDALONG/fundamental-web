@@ -2,9 +2,12 @@ import { Avatar, Button, Divider, Typography, TextField, Box } from '@mui/materi
 import React, { useState } from 'react'
 import * as yup from "yup";
 import { Formik } from "formik";
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../stores/store';
-import { ImageViewAlert } from '../../utils/SweetAlert'
+import { ImageViewAlert, successAlert, waringAlert } from '../../utils/SweetAlert'
+import axios from 'axios';
+import { UserModel } from '../../types/userModel';
+import { setUser } from '../../stores/slice/user.slice';
 type PasswordModel = {
     old_pass: string,
     new_pass: string,
@@ -24,11 +27,13 @@ const passwordSchema = yup.object().shape({
 });
 function ProfileTeacher() {
     const userImage = useSelector((state: RootState) => state.userReducer.image)
+    const userStore = useSelector((state: RootState) => state.userReducer)
+    const userDispatch = useDispatch()
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [imagePreview, setImagePreview] = useState<string>('');
     const [userProfile, setUserProfile] = useState<any>({
-        firstname: "Winai",
-        lastname: "Sriburin",
+        nameTH: userStore.nameTH,
+        nameEN: userStore.nameEN,
     })
 
 
@@ -46,8 +51,48 @@ function ProfileTeacher() {
         setImagePreview('')
     }
 
-    const onSubmitPassword = (values: PasswordModel) => {
-        console.log(values);
+    const updateProfile = async () => {
+        try {
+            let formData = new FormData
+            if (imageFile) {
+                formData.append('file', imageFile)
+            }
+            const response = await axios.post('/user/update-profile', formData)
+            if (response && response.status === 200) {
+                successAlert('อัปเดตโปรไฟล์สำเร็จ').then(() => {
+                    setImageFile(null)
+                    setImagePreview('')
+                    userDispatch(setUser(response.data as UserModel))
+                    window.location.reload()
+                })
+            }
+        } catch (error) {
+
+        }
+    }
+
+    const onSubmitPassword = async (values: PasswordModel) => {
+        try {
+            if (values.new_pass !== values.new_pass2) {
+                return waringAlert('รหัสผ่านใหม่ไม่เหมือนกัน')
+            }
+            if (values.old_pass === values.new_pass || values.old_pass === values.new_pass2) {
+                return waringAlert('รหัสผ่านใหม่และรหัสผ่านเดิมซ้ำกัน')
+            }
+
+            const response = await axios.post('/user/change-password', {
+                oldPassword: values.old_pass,
+                newPassword: values.new_pass
+            })
+            if (response && response.status === 200) {
+                successAlert(response.data.message as string).then(() => {
+                    window.location.reload()
+                })
+            }
+        } catch (error) {
+
+        }
+
 
     }
     return (
@@ -57,7 +102,7 @@ function ProfileTeacher() {
                     <h2 className='text-secondary'>ข้อมูลส่วนตัว</h2>
                     <div className='flex flex-col items-center gap-5'>
                         {(!!!imagePreview && !!!imageFile && !!userImage) && (
-                                <img src={`${import.meta.env.VITE_API_ENDPOINT}/${userImage}`} className='w-40 h-40 rounded-full border-solid border-secondary border-4 object-cover cursor-pointer' onClick={() => ImageViewAlert(`${import.meta.env.VITE_API_ENDPOINT}/${userImage}`)}></img>
+                            <img src={`${import.meta.env.VITE_API_ENDPOINT}/${userImage}`} className='w-40 h-40 rounded-full border-solid border-secondary border-4 object-cover cursor-pointer' onClick={() => ImageViewAlert(`${import.meta.env.VITE_API_ENDPOINT}/${userImage}`)}></img>
                         )}
                         {(!!imagePreview && !!imageFile) && (
                             <label htmlFor="upload-image">
@@ -76,7 +121,7 @@ function ProfileTeacher() {
                         )}
                         {(!!imagePreview && !!imageFile) && (
                             <div className='flex justify-center items-center gap-2'>
-                                <Button variant='contained' color='success'>บันทึก</Button>
+                                <Button variant='contained' color='success' onClick={updateProfile} >บันทึก</Button>
                                 <Button variant='contained' color='inherit' onClick={clearImageFile}>ยกเลิก</Button>
                             </div>
                         )}
@@ -85,15 +130,15 @@ function ProfileTeacher() {
                         <TextField
                             variant="outlined"
                             type={"text"}
-                            label="ชื่อ"
-                            value={userProfile.firstname}
+                            label="ชื่อภาษาไทย"
+                            value={userProfile.nameTH}
                             disabled
                         ></TextField>
                         <TextField
                             variant="outlined"
                             type={"text"}
-                            label="นามสกุล"
-                            value={userProfile.lastname}
+                            label="ชื่อภาษาอังกฤษ"
+                            value={userProfile.nameEN}
                             disabled
                         ></TextField>
                     </form>
