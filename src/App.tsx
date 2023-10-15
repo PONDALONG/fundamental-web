@@ -49,10 +49,11 @@ function App() {
         loadingModalRef.current.setOpen(false)
       }
       if (error.response.status === 401) {
-        waringAlert(error.response.data.message)
-        localStorage.removeItem("access-token");
-        userDispatch(clearUser())
-        window.location.href = '/'
+        waringAlert(error.response.data.message).then(() => {
+          localStorage.removeItem("access-token");
+          userDispatch(clearUser())
+          window.location.href = '/'
+        })
       } else if (error.response.status === 400) {
         waringAlert(error.response.data.message)
       }

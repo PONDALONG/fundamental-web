@@ -1,4 +1,4 @@
-import { Button, IconButton, Switch, TextField, Tooltip, Typography, Box } from '@mui/material'
+import { Button, IconButton, Switch, TextField, Tooltip, Typography, Box, FormControl } from '@mui/material'
 import { DateTimePicker } from '@mui/x-date-pickers'
 import * as yup from "yup";
 import { Formik } from "formik";
@@ -19,6 +19,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MUIDataTable from 'mui-datatables'
 import axios from 'axios';
 import { AssignmentModel } from '../../types/AssignmentModel';
+import { StudentGroupModel, StudentGroupResponseModel } from '../../types/StudentModel';
 
 const assignmentDetailSchema = yup.object().shape({
   assignmentName: yup.string().required("กรุณากรอกชื่อแบบฝึกหัด"),
@@ -40,35 +41,14 @@ function AssigmentDetail() {
   const [assignmentType, setAssignmentType] = useState<string>('INDIVIDUAL')
   const [endDate, setEndDate] = useState(dayjs(new Date()))
   const contentText = useRef("")
-  const [description, setDescription] = useState('')
   const [file, setFile] = useState<File[]>([])
   const [assignmentDetailForm, setAssignmentDetailForm] = useState<AssignmentModel>(new AssignmentModel())
   const [resourceDelete, setResourceDelete] = useState<number[]>([])
-  const [studentGroup, setStudentGroup] = useState(
-    [
-      {
-        studentId: '123',
-        name: 'winai jaibun',
-        id: 1,
-        group: '',
-      },
-      {
-        studentId: '1234',
-        name: 'winai jaibun',
-        id: 2,
-        group: '',
-      },
-      {
-        studentId: '12345',
-        name: 'winai jaibun',
-        id: 3,
-        group: '',
-      },
-    ]
-  )
+  const [studentGroup, setStudentGroup] = useState<StudentGroupModel[]>([])
+
   const columns = [
     {
-      name: "studentId",
+      name: "studentNo",
       label: "รหัสนักศึกษา",
       options: {
         filter: false,
@@ -76,7 +56,7 @@ function AssigmentDetail() {
       }
     },
     {
-      name: "name",
+      name: "studentName",
       label: "ชื่อ-สกุล",
       options: {
         filter: false,
@@ -91,7 +71,7 @@ function AssigmentDetail() {
       }
     },
     {
-      name: "group",
+      name: "studentGroup",
       label: 'กลุ่ม',
       options: {
         filter: false,
@@ -99,13 +79,15 @@ function AssigmentDetail() {
         customBodyRender: (value: number, tableMeta: any, updateValue: any,) => {
           return (
             <Box display={"flex"} flexDirection={{ xs: "column", sm: "row" }} gap={1} justifyContent={"center"} alignItems={"center"} width={{ xs: "100%", lg: "50%" }} maxWidth={"70px"}>
-              <TextField
-                variant="outlined"
-                type={"text"}
-                label="กลุ่ม"
-                onChange={(e) => updateValue(onInputStudentGroupChange(e.target.value, tableMeta.rowIndex))}
-                value={studentGroup[tableMeta.rowIndex].group}
-              ></TextField>
+              <FormControl>
+                <TextField
+                  variant="outlined"
+                  type={"text"}
+                  label="กลุ่ม"
+                  onChange={(e) => updateValue(onInputStudentGroupChange(e.target.value, tableMeta.rowIndex))}
+                  value={studentGroup[tableMeta.rowIndex].stdAsmGroup || ''}
+                ></TextField>
+              </FormControl>
             </Box>
           )
         }
@@ -127,20 +109,22 @@ function AssigmentDetail() {
       const response = await axios.get(`/assignment/find?assignmentId=${id}`)
       if (response && response.status === 200) {
         setAssignmentDetailForm(response.data as AssignmentModel)
-        // setDescription(assignmentDetailForm.assignmentDescription)
         contentText.current = response.data.assignmentDescription
+        setAssignmentStatus(response.data.assignmentStatus === 'OPEN')        
+        setAssignmentType(response.data.assignmentType)
+        if ((response?.data?.assignmentType as string).toLocaleUpperCase() === 'GROUP') {
+          findStudentAssignment()
+        }
+      } else if (!!!response) {
+        navigate(`/teacher/assignment?group=${params.group}&year=${params.year}&term=${params.term}&roomId=${!!params.roomId ? params.roomId : ''}`)
       }
-
     } catch (error) {
-
     }
   }
 
   const onContentTextChange = (data: string) => {
     contentText.current = data
     console.log(contentText.current);
-    // setDescription(data)
-    
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,7 +141,7 @@ function AssigmentDetail() {
 
   }
 
-  const onRemoveResouce = async(fielResourceId: number) => {
+  const onRemoveResouce = async (fielResourceId: number) => {
     const ensure = await ensureRemove('ต้องการลบไฟล์ใช่หรือไม่')
     if (ensure.isConfirmed) {
       setResourceDelete([...resourceDelete, fielResourceId])
@@ -170,22 +154,12 @@ function AssigmentDetail() {
 
 
   const onSubmitAssigmentDetail = async (value: AssignmentModel) => {
-    // console.log(value.assignmentName);
-    // console.log(value.assignmentScore);
-    // console.log(assignmentStatus);
-    // console.log(assignmentType);
-    // console.log(endDate);
-    // console.log(value.assignmentId);
-    console.log('before form =>', contentText.current);
-    
-
     if (isNaN(Number(value.assignmentScore)) || Number(value.assignmentScore) <= 0) {
       waringAlert('กรุณากรอกคะแนน')
       return
     }
     const assignment = new AssignmentModel()
     assignment.assignmentName = value.assignmentName
-    // assignment.assignmentDescription = description
     assignment.assignmentDescription = contentText.current
     assignment.assignmentScore = Number(value.assignmentScore)
     assignment.assignmentEndDate = endDate.toDate().toISOString()
@@ -195,16 +169,17 @@ function AssigmentDetail() {
     assignment.assignmentId = value.assignmentId
     assignment.roomId = value.roomId
     console.log(assignment);
-    
+
     if (!!id) {
       await updateAssignment(assignment)
     } else {
       await createAssignment(assignment)
     }
-
+    setFile([])
+    setResourceDelete([])
   }
 
-  const updateAssignment = async(data: AssignmentModel) => {
+  const updateAssignment = async (data: AssignmentModel) => {
     try {
       let formData = new FormData()
       formData.append('assignmentId', data.assignmentId.toString())
@@ -233,7 +208,7 @@ function AssigmentDetail() {
     }
   }
 
-  const createAssignment = async(data: AssignmentModel) => {
+  const createAssignment = async (data: AssignmentModel) => {
     try {
       let formData = new FormData()
       formData.append('assignmentId', data.assignmentId.toString())
@@ -258,17 +233,55 @@ function AssigmentDetail() {
         }
       }
     } catch (error) {
-      
+
     }
   }
 
   const onInputStudentGroupChange = (value: string, index: number) => {
     let group = studentGroup
     let newStudentGroup = group[index]
-    newStudentGroup.group = value
+    newStudentGroup.stdAsmGroup = value
     group[index] = newStudentGroup
     setStudentGroup(group)
   }
+
+  const onAssignmentTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAssignmentType(e.target.value)
+    if (e.target.value.toUpperCase() === 'GROUP') {
+      findStudentAssignment()
+    }
+  }
+
+  const findStudentAssignment = async () => {
+    await axios.get(`/student-assignment/find-student?assignmentId=${id}`).then((res) => {
+      if (res && res.status == 200) {
+        const data = res.data as StudentGroupResponseModel[]
+        const tempData: StudentGroupModel[] = data.map((d) => {
+          const temp: StudentGroupModel = {
+            stdAsmId: d.stdAsmId,
+            studentId: d.student.studentId,
+            studentName: d.student.user.nameTH,
+            studentNo: d.student.user.studentNo,
+            stdAsmGroup: d.stdAsmGroup
+          }
+          return temp
+        })
+        setStudentGroup(tempData)
+      }
+    })
+  }
+
+  const saveStudentGroup = async () => {
+    try {
+      const response = await axios.post(`/student-assignment/form-into-groups`, studentGroup)
+      if (response && response.status === 200) {
+        findStudentAssignment()
+      }
+    } catch (error) {
+
+    }
+  }
+
 
   return (
     <div className='flex flex-col gap-2 px-2'>
@@ -335,8 +348,9 @@ function AssigmentDetail() {
                 <label className='font-bold text-primary'>ประเภทงาน</label>
                 <RadioGroup
                   defaultValue="INDIVIDUAL"
+                  value={assignmentType}
                   row
-                  onChange={(e) => setAssignmentType(e.target.value)}
+                  onChange={(e) => onAssignmentTypeChange(e)}
                 >
                   <FormControlLabel value="INDIVIDUAL" control={<Radio />} label="เดี่ยว" />
                   <FormControlLabel value="GROUP" control={<Radio />} label="กลุ่ม" />
@@ -364,12 +378,13 @@ function AssigmentDetail() {
                             body: {
                               noMatch: 'ไม่พบข้อมูล'
                             }
-                          }
+                          },
+                          pagination: false
                         }}
                       />
                     </div>
                     <div className='flex justify-center items-center gap-2'>
-                      <Button type='submit' variant='contained' color='success' >บันทึก</Button>
+                      <Button type='submit' variant='contained' color='success' onClick={saveStudentGroup} >บันทึก</Button>
                     </div>
                   </AccordionDetails>
                 </Accordion>
@@ -382,24 +397,24 @@ function AssigmentDetail() {
               <div className='w-full flex flex-col gap-2 mt-16 lg:mt-10 py-3'>
                 <span className='font-bold text-primary'>อัปโหลดไฟล์</span>
                 <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2'>
-                  {(assignmentDetailForm.fileResources && assignmentDetailForm.fileResources.length > 0) 
-                  && assignmentDetailForm.fileResources.map((resource, index) => (
-                    <div key={index} className='relative group h-20 w-full border-slate-400 border-solid border-[1px] rounded-lg flex flex-col justify-center items-center cursor-pointer hover:bg-slate-500 duration-300 break-all'>
-                      <DeleteIcon
-                        onClick={() => onRemoveResouce(resource.fileResourceId)}
-                        className='absolute top-1 right-1 w-5 h-5 hover:text-red-500 hover:scale-150 duration-1000 cursor-pointer' />
-                       <Typography variant='inherit' noWrap>{resource.fileResourceName}</Typography>
-                      <a className='text-xs' href={`${import.meta.env.VITE_API_ENDPOINT}/${resource.fileResourcePath}`}>ดาวน์โหลด</a>
-                    </div>
-                  ))}
+                  {(assignmentDetailForm.fileResources && assignmentDetailForm.fileResources.length > 0)
+                    && assignmentDetailForm.fileResources.map((resource, index) => (
+                      <div key={index} className='relative group h-20 w-full border-slate-400 border-solid border-[1px] rounded-lg flex flex-col justify-center items-center cursor-pointer hover:bg-slate-500 duration-300 break-all'>
+                        <DeleteIcon
+                          onClick={() => onRemoveResouce(resource.fileResourceId)}
+                          className='absolute top-1 right-1 w-5 h-5 hover:text-red-500 hover:scale-150 duration-1000 cursor-pointer' />
+                        <Typography variant='inherit' noWrap whiteSpace={'unset'}>{resource.fileResourceName}</Typography>
+                        <a className='text-xs' href={`${import.meta.env.VITE_API_ENDPOINT}/${resource.fileResourcePath}`}>ดาวน์โหลด</a>
+                      </div>
+                    ))}
 
                   {(file && file.length > 0) && file.map((f: File, index) => (
                     <div key={index} className='relative group h-20 w-full border-slate-400 border-solid border-[1px] rounded-lg flex justify-center items-center cursor-pointer hover:bg-slate-500 duration-300 break-all'>
                       <DeleteIcon
                         onClick={() => onRemoveFile(index)}
                         className='absolute top-1 right-1 w-5 h-5 hover:text-red-500 hover:scale-150 duration-1000 cursor-pointer' />
-                      
-                      <Typography variant='inherit' noWrap>{f.name}</Typography>
+
+                      <Typography variant='inherit' noWrap whiteSpace={'unset'} >{f.name}</Typography>
                     </div>
                   ))}
                   <Tooltip title="อัปโหลดไฟล์" placement='top-end'>

@@ -228,7 +228,7 @@ function Assignment() {
             <CardActions className='flex flex-col sm:flex-row sm:justify-between items-end sm:items-end'>
               <div className='flex flex-row gap-2'>
                 <Button size="medium" variant='contained' color='info' onClick={() => navigate(`/teacher/assignment-detail/${assignment.assignmentId}?group=${selectGroup}&year=${selectYear}&term=${selectTerm}&roomId=${roomId ? roomId : ''}`)}>รายละเอียด</Button>
-                <Button size="medium" variant='contained' color='warning' onClick={() => navigate(`/teacher/submitted-assignment/${assignment.assignmentId}?group=${selectGroup}&year=${selectYear}&term=${selectTerm}&roomId=${roomId ? roomId : ''}`)}>ตรวจงาน</Button>
+                <Button size="medium" variant='contained' color='warning' onClick={() => navigate(`/teacher/submitted-assignment/${assignment.assignmentId}?group=${selectGroup}&year=${selectYear}&term=${selectTerm}&roomId=${roomId ? roomId : ''}&type=${assignment.assignmentType}`)}>ตรวจงาน</Button>
               </div>
 
               <Typography variant="caption" color="text.secondary">
