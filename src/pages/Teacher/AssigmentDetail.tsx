@@ -124,7 +124,6 @@ function AssigmentDetail() {
 
   const onContentTextChange = (data: string) => {
     contentText.current = data
-    console.log(contentText.current);
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -404,7 +403,7 @@ function AssigmentDetail() {
                           onClick={() => onRemoveResouce(resource.fileResourceId)}
                           className='absolute top-1 right-1 w-5 h-5 hover:text-red-500 hover:scale-150 duration-1000 cursor-pointer' />
                         <Typography variant='inherit' noWrap whiteSpace={'unset'}>{resource.fileResourceName}</Typography>
-                        <a className='text-xs' href={`${import.meta.env.VITE_API_ENDPOINT}/${resource.fileResourcePath}`}>ดาวน์โหลด</a>
+                        <a className='text-xs' target='_blank' href={`${import.meta.env.VITE_API_ENDPOINT}/${resource.fileResourcePath}`}>ดาวน์โหลด</a>
                       </div>
                     ))}
 

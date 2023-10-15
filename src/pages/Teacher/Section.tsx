@@ -7,7 +7,9 @@ import SectionModal from '../../components/SectionModal';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { RoomModel } from '../../types/RoomModel';
+import { useNavigate } from 'react-router-dom';
 function Section() {
+  const navigate = useNavigate()
   const [dialogOpen, setDialogOpen] = useState<boolean>(false)
   const [sectionId, setSectionId] = useState<number | null>(null)
   const [yearList, setYearList] = useState<number[]>([])
@@ -96,7 +98,7 @@ function Section() {
 
       <div className='grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-2'>
         {(sectionList && sectionList.length > 0) && sectionList.map((section, index) => (
-          <Paper elevation={3} key={index} className='group flex flex-col justify-center items-center py-2 bg-white hover:bg-slate-700 duration-500 cursor-pointer h-24 relative'>
+          <Paper elevation={3} key={index} onClick={() => navigate(`/teacher/section/${section.roomId}`)} className='group flex flex-col justify-center items-center py-2 bg-white hover:bg-slate-700 duration-500 cursor-pointer h-24 relative'>
             <div className='flex items-center gap-1 justify-center absolute top-1 right-0 group-hover:text-white mx-2'>
 
               <Tooltip title='แก้ไข' className='text-base hover:text-yellow-500 duration-200'>

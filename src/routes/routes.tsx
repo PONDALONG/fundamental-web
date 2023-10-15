@@ -8,6 +8,7 @@ import { isSignedIn } from "../stores/slice/auth.slice";
 
 const DashboardTeacherPage = lazy(() => import('../pages/Teacher/Dashboard'))
 const SectionTeacherPage = lazy(() => import('../pages/Teacher/Section'))
+const SectionDetailTeacherPage = lazy(() => import('../pages/Teacher/SectionDetail'))
 const AssignmentTeacherPage = lazy(() => import('../pages/Teacher/Assignment'))
 const StudentTeacherPage = lazy(() => import('../pages/Teacher/Student'))
 const ContentTeacherPage = lazy(() => import('../pages/Teacher/Content'))
@@ -63,6 +64,10 @@ export default function Routes() {
                 {
                     path: '/teacher/section',
                     element: <SectionTeacherPage />
+                },
+                {
+                    path: '/teacher/section/:id',
+                    element: <SectionDetailTeacherPage />
                 },
                 {
                     path: '/teacher/assignment',
