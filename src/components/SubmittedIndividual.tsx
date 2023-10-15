@@ -2,7 +2,7 @@ import { Box, Button } from '@mui/material';
 import MUIDataTable from 'mui-datatables'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { StudentAssignmentGroupResponseModel, StudentSubmitGroupModel } from '../types/StudentModel';
+import { StudentAssignmentGroupResponseModel, StudentGroupModel, StudentGroupResponseModel, StudentModel, StudentSubmitGroupModel, StudentSubmitIndividualModel } from '../types/StudentModel';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import "dayjs/locale/th";
@@ -13,56 +13,27 @@ type Input = {
     assignmentId: number
 }
 
-function SubmittedGroup({ assignmentId }: Input) {
+function SubmitIndividual({ assignmentId }: Input) {
     const navigate = useNavigate()
-    const [submittedList, setSubmittedList] = useState<StudentSubmitGroupModel[]>([])
+    const [submittedList, setSubmittedList] = useState<StudentSubmitIndividualModel[]>([])
 
 
 
     const columns = [
         {
-            name: "stdAsmGroup",
-            label: "กลุ่ม",
-            options: {
-                filter: false,
-                sort: false,
-            },
-            customBodyRender: (value: string, tableMeta: any, updateValue: any) => {
-                <span>{value}</span>
-            }
-        },
-        {
-            name: "memberStdNumber",
+            name: "studentNo",
             label: "รหัสนักศึกษา",
             options: {
                 filter: false,
                 sort: false,
-                customBodyRender: (value: string[], tableMeta: any, updateValue: any) => {
-                    return (
-                        <div className='flex flex-col'>
-                            {value.map((v, index) => (
-                                <span key={index} >{v}</span>
-                            ))}
-                        </div>
-                    )
-                }
             }
         },
         {
-            name: "memberName",
+            name: "stdName",
             label: "ชื่อ-สกุล",
             options: {
                 filter: false,
                 sort: false,
-                customBodyRender: (value: string[], tableMeta: any, updateValue: any) => {
-                    return (
-                        <div className='flex flex-col'>
-                            {value.map((v, index) => (
-                                <span key={index} >{v}</span>
-                            ))}
-                        </div>
-                    )
-                }
             }
         },
         {
@@ -101,7 +72,6 @@ function SubmittedGroup({ assignmentId }: Input) {
                                 {dayjs(new Date(value)).locale('th').format('DD MMM BBBB HH:mm')}
                             </Box>}
                         </>
-
                     )
                 }
             }
@@ -123,7 +93,7 @@ function SubmittedGroup({ assignmentId }: Input) {
                 customBodyRender: (value: number, tableMeta: any, updateValue: any) => {
                     return (
                         <Box display={"flex"} flexDirection={{ xs: "column", sm: "row" }} gap={1} justifyContent={"center"} alignItems={"center"} width={{ xs: "100%", lg: "50%" }}>
-                            {String(tableMeta.rowData[3]).toUpperCase() !== 'WAITING' && (
+                            {String(tableMeta.rowData[2]).toUpperCase() !== 'WAITING' && (
                                 <Button fullWidth color='info' variant='contained' onClick={() => navigate(`/teacher/student-submitted/${value}`)} >
                                     ตรวจงาน
                                 </Button>
@@ -145,21 +115,19 @@ function SubmittedGroup({ assignmentId }: Input) {
         try {
             const response = await axios.get(`/student-assignment/find-all?assignmentId=${assignmentId}`)
             if (response && response.status === 200) {
-                const data: StudentAssignmentGroupResponseModel[] = response.data as StudentAssignmentGroupResponseModel[]
-                const temp: StudentSubmitGroupModel[] = data.map((d) => {
-                    const obj: StudentSubmitGroupModel = {
-                        stdAsmId: d.studentAssignments[0].stdAsmId,
-                        stdAsmGroup: d.stdAsmGroup,
-                        stdAsmScore: d.studentAssignments[0].stdAsmScore,
-                        stdAsmDateTime: d.studentAssignments[0].stdAsmDateTime,
-                        memberName: d.studentAssignments.map((s: any) => s = s.student.user.nameTH),
-                        memberStdNumber: d.studentAssignments.map((s: any) => s = s.student.user.studentNo),
-                        stdAsmStatus: d.studentAssignments[0].stdAsmStatus
+                const data: StudentGroupResponseModel[] = response.data as StudentGroupResponseModel[]
+                const temp: StudentSubmitIndividualModel[] = data.map((d) => {
+                    const obj: StudentSubmitIndividualModel = {
+                        stdAsmId: d.stdAsmId,
+                        studentNo: d.student.user.studentNo,
+                        stdName: d.student.user.nameTH,
+                        stdAsmScore: d.stdAsmScore,
+                        stdAsmDateTime: d.stdAsmDateTime,
+                        stdAsmStatus: d.stdAsmStatus
                     }
                     return obj
                 })
                 setSubmittedList(temp)
-
             }
         } catch (error) {
             console.log(error);
@@ -204,4 +172,4 @@ function SubmittedGroup({ assignmentId }: Input) {
     )
 }
 
-export default SubmittedGroup
+export default SubmitIndividual

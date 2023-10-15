@@ -39,9 +39,12 @@ export class StudentSubmitIndividualModel {
   studentNo: string = ""
   stdAsmStatus: string = "WATING"
   stdAsmScore: number = 0
+  stdAsmDateTime: string | Date = ""
+  stdName: string = ""
 }
 
 export class StudentSubmitGroupModel {
+    stdAsmId: number = 0
     stdAsmGroup: string | null = ""
     memberStdNumber = new Array<string>()
     memberName = new Array<string>()

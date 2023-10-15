@@ -247,7 +247,7 @@ function AssigmentDetail() {
 
   const onAssignmentTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAssignmentType(e.target.value)
-    if (e.target.value.toUpperCase() === 'GROUP') {
+    if (e.target.value.toUpperCase() === 'GROUP' && !!id) {
       findStudentAssignment()
     }
   }
