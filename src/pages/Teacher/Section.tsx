@@ -7,7 +7,7 @@ import SectionModal from '../../components/SectionModal';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { RoomModel } from '../../types/RoomModel';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 function Section() {
   const navigate = useNavigate()
   const [dialogOpen, setDialogOpen] = useState<boolean>(false)
@@ -17,11 +17,15 @@ function Section() {
   const [selectYear, setSelectYear] = useState<number | string>('')
   const [selectTerm, setSelectTerm] = useState<number>(1)
   const [sectionList, setSectionList] = useState<RoomModel[]>([])
+  const [searchParams, setSearchParams] = useSearchParams()
+  const params = {
+    year: searchParams.get('year') || null,
+    term: searchParams.get('term') || null,
+  }
   useEffect(() => {
     getFilterList()
+    setFilter()
     if (!!selectYear && !!selectTerm) {
-      console.log(selectYear, selectTerm);
-
       getSectionList()
     }
   }, [selectYear, selectTerm])
@@ -41,6 +45,21 @@ function Section() {
         setSectionList(res.data as RoomModel[])
       }
     })
+  }
+
+  const clearParams = () => {
+    searchParams.delete('year')
+    searchParams.delete('term')
+    setSearchParams(searchParams)
+  }
+
+  const setFilter = () => {
+    if (params.year && params.term) {
+      setSelectYear(params.year as string)
+      setSelectTerm(Number(params.term) as number)
+      clearParams()
+    }
+    
   }
 
   const onEditClick = (id: number) => {
@@ -70,7 +89,7 @@ function Section() {
             <span>ปีการศึกษา</span>
             <FormControl variant='standard'>
               <Select
-                defaultValue={''}
+                value={selectYear}
               >
                 {(yearList && yearList.length > 0) && yearList.map((year, index) => (
                   <MenuItem key={index} value={year} onClick={() => setSelectYear(year)} >{year}</MenuItem>
@@ -82,7 +101,7 @@ function Section() {
             <span>ภาคเรียน</span>
             <FormControl variant='standard' >
               <Select
-                defaultValue={1}
+                value={selectTerm}
               >
                 {(termList && termList.length > 0) && termList.map((term, index) => (
                   <MenuItem key={index} value={term} onClick={() => setSelectTerm(+term)} >{term}</MenuItem>
@@ -98,7 +117,7 @@ function Section() {
 
       <div className='grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-2'>
         {(sectionList && sectionList.length > 0) && sectionList.map((section, index) => (
-          <Paper elevation={3} key={index} onClick={() => navigate(`/teacher/section/${section.roomId}`)} className='group flex flex-col justify-center items-center py-2 bg-white hover:bg-slate-700 duration-500 cursor-pointer h-24 relative'>
+          <Paper elevation={3} key={index} onClick={() => navigate(`/teacher/section/${section.roomId}?year=${selectYear}&term=${selectTerm}&group=${section.roomGroup}`)} className='group flex flex-col justify-center items-center py-2 bg-white hover:bg-slate-700 duration-500 cursor-pointer h-24 relative'>
             <div className='flex items-center gap-1 justify-center absolute top-1 right-0 group-hover:text-white mx-2'>
 
               <Tooltip title='แก้ไข' className='text-base hover:text-yellow-500 duration-200'>

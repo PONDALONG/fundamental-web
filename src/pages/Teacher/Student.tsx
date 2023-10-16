@@ -60,10 +60,7 @@ export default function Student() {
         customBodyRender: (value: number) => {
           return (
             <Box display={"flex"} flexDirection={{ xs: "column", sm: "row" }} gap={1} justifyContent={"center"} alignItems={"center"} width={'100%'}>
-              <Button fullWidth color='info' variant='contained' onClick={() => navigate('/teacher/student/1')}>
-                รายละเอียด
-              </Button>
-              <Button fullWidth color='warning' variant='contained'>
+              <Button fullWidth color='warning' variant='contained' onClick={() => navigate('/teacher/student/1')}>
                 แก้ไข
               </Button>
               <Button fullWidth color='error' variant='contained'>
