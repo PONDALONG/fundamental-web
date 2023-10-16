@@ -1,18 +1,30 @@
 import { FormControl, MenuItem, Select, Button, Box } from '@mui/material'
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import DownloadIcon from '@mui/icons-material/Download';
-import { useState } from 'react'
-import { StudentSectionModel } from '../../types/StudentModel'
+import { useEffect, useState } from 'react'
+import { StudentModel, StudentSectionModel } from '../../types/StudentModel'
 import MUIDataTable from 'mui-datatables'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import axios from 'axios';
+import { waringAlert } from '../../utils/SweetAlert';
 
 export default function Student() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const params = {
+    group: searchParams.get('group') || null,
+    year: searchParams.get('year') || null,
+    term: searchParams.get('term') || null,
+  }
   const [studentList, setStudentList] = useState<StudentSectionModel[]>([])
-
+  const [groupList, setGroupList] = useState<string[]>([])
+  const [yearList, setYearList] = useState<number[]>([])
+  const [selectGroup, setSelectGroup] = useState<string>('')
+  const [selectYear, setSelectYear] = useState<number | string>('')
+  const [selectTerm, setSelectTerm] = useState<number>(1)
   const columns = [
     {
-      name: "studentId",
+      name: "studentNo",
       label: "รหัสนักศึกษา",
       options: {
         filter: false,
@@ -20,39 +32,23 @@ export default function Student() {
       }
     },
     {
-      name: "firstname",
-      label: "ชื่อ",
+      name: "nameTH",
+      label: "ชื่อไทย",
       options: {
         filter: false,
         sort: false,
       }
     },
     {
-      name: "lastname",
-      label: "นามสกุล",
+      name: "nameEN",
+      label: "ชื่ออังกฤษ",
       options: {
         filter: false,
         sort: false,
       }
     },
     {
-      name: "level",
-      label: "สาขาวิขา",
-      options: {
-        filter: false,
-        sort: false,
-      }
-    },
-    {
-      name: "section",
-      label: "กลุ่มเรียน",
-      options: {
-        filter: false,
-        sort: false,
-      }
-    },
-    {
-      name: "id",
+      name: "userId",
       label: "จัดการ",
       options: {
         filter: false,
@@ -60,11 +56,8 @@ export default function Student() {
         customBodyRender: (value: number) => {
           return (
             <Box display={"flex"} flexDirection={{ xs: "column", sm: "row" }} gap={1} justifyContent={"center"} alignItems={"center"} width={'100%'}>
-              <Button fullWidth color='warning' variant='contained' onClick={() => navigate('/teacher/student/1')}>
+              <Button fullWidth color='warning' variant='contained' onClick={() => navigate(`/teacher/student/${value}?group=${selectGroup}&year=${selectYear}&term=${selectTerm}`)}>
                 แก้ไข
-              </Button>
-              <Button fullWidth color='error' variant='contained'>
-                ลบ
               </Button>
             </Box>
           )
@@ -73,19 +66,66 @@ export default function Student() {
     },
   ];
 
-  const onSearchClick = async () => {
-    let temp: StudentSectionModel[] = []
-    for (let i = 0; i < 10; i++) {
-      temp.push({
-        id: (i + 1),
-        studentId: '611111111111-10',
-        firstname: 'วินัย',
-        lastname: 'ใจบุญ',
-        level: 'ECP4N',
-        section: 'ECP1N 2/2566'
-      })
+  useEffect(() => {
+    fetchDropdown()
+  }, [])
+
+  const fetchDropdown = async () => {
+    try {
+      const response = await axios.get('/student/dropdown-filter')
+      if (response && response.status === 200) {
+        setGroupList(response.data?.groups as string[])
+        setYearList(response.data?.years as number[])
+        setFilter()
+        if (!!selectGroup && !!selectYear && !!selectTerm) {
+          onSearchClick()
+        }
+      }
+    } catch (error) {
+
     }
-    setStudentList(temp)
+  }
+
+  const clearParams = () => {
+    searchParams.delete('year')
+    searchParams.delete('group')
+    searchParams.delete('term')
+    setSearchParams(searchParams)
+  }
+
+  const setFilter = async () => {
+    if (!!params.group && !!params.year && !!params.term) {
+      setSelectGroup(params.group)
+      setSelectYear(+params.year)
+      setSelectTerm(Number(params.term))
+      clearParams()
+    }
+  }
+
+  const onSearchClick = async () => {
+    if (!selectGroup || !selectYear || !selectTerm) {
+      return waringAlert('กรุณากรอกตัวกรองให้ครบ')
+    }
+    try {
+      const response = await axios.get(`/student/find-all?roomGroup=${selectGroup}&roomYear=${selectYear}&roomTerm=${selectTerm}`)
+      if (response && response.status === 200) {
+        const data: StudentModel[] = response.data as StudentModel[]
+        const temp: StudentSectionModel[] = data.map((d) => {
+          const obj: StudentSectionModel = {
+            userId: d.user.userId,
+            nameEN: d.user.nameEN,
+            nameTH: d.user.nameTH,
+            studentNo: d.user.studentNo
+          }
+          return obj
+        })
+        setStudentList(temp)
+      }
+    } catch (error) {
+
+    }
+
+
   }
 
   return (
@@ -97,11 +137,11 @@ export default function Student() {
             <span>กลุ่มเรียน</span>
             <FormControl variant='standard'>
               <Select
-                defaultValue={'ECP4N'}
+                value={selectGroup}
               >
-                <MenuItem value={'ECP4N'}>ECP4N</MenuItem>
-                <MenuItem value={'ECP3N'}>ECP3N</MenuItem>
-                <MenuItem value={'ECP1N'}>ECP1N</MenuItem>
+                {(groupList && groupList.length > 0) && groupList.map((group, index) => (
+                  <MenuItem key={index} value={group} onClick={() => setSelectGroup(group)}>{group}</MenuItem>
+                ))}
               </Select>
             </FormControl>
           </div>
@@ -109,11 +149,11 @@ export default function Student() {
             <span>ปีการศึกษา</span>
             <FormControl variant='standard'>
               <Select
-                defaultValue={'2566'}
+                value={selectYear}
               >
-                <MenuItem value={'2566'}>2566</MenuItem>
-                <MenuItem value={'2565'}>2565</MenuItem>
-                <MenuItem value={'2564'}>2564</MenuItem>
+                {(yearList && yearList.length > 0) && yearList.map((year, index) => (
+                  <MenuItem key={index} value={year} onClick={() => setSelectYear(year)} >{year}</MenuItem>
+                ))}
               </Select>
             </FormControl>
           </div>
@@ -121,11 +161,11 @@ export default function Student() {
             <span>ภาคเรียน</span>
             <FormControl variant='standard'>
               <Select
-                defaultValue={'1'}
+                value={selectTerm}
               >
-                <MenuItem value={'1'}>1</MenuItem>
-                <MenuItem value={'2'}>2</MenuItem>
-                <MenuItem value={'3'}>3</MenuItem>
+                <MenuItem value={1} onClick={() => setSelectTerm(1)}>1</MenuItem>
+                <MenuItem value={2} onClick={() => setSelectTerm(2)}>2</MenuItem>
+                <MenuItem value={3} onClick={() => setSelectTerm(3)}>3</MenuItem>
               </Select>
             </FormControl>
           </div>

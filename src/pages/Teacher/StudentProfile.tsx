@@ -1,97 +1,130 @@
-import { TextField, Card, Typography, CardActions, Button, CardContent, FormControl, CardHeader, Tooltip } from '@mui/material'
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { TextField, Card, Typography, CardActions, Button, CardContent, FormControl, CardHeader, Tooltip, Switch } from '@mui/material'
+import Avatar from '@mui/material/Avatar';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { StudentModel } from '../../types/StudentModel';
+import axios from 'axios';
+import { ensureRemove, successAlert } from '../../utils/SweetAlert';
 
 function StudentProfile() {
     const navigate = useNavigate()
-    const [userProfile, setUserProfile] = useState<any>({
-        firstname: "Winai",
-        lastname: "Sriburin",
-        studentId: "555555555555",
-        section: "ecp1n"
-    })
+    const { id } = useParams();
+    const [searchParams, setSearchParams] = useSearchParams()
+    const params = {
+        group: searchParams.get('group') || null,
+        year: searchParams.get('year') || null,
+        term: searchParams.get('term') || null,
+    }
+    const [userProfile, setUserProfile] = useState<StudentModel>(new StudentModel())
+    const [userStatus, setUserStatus] = useState<boolean>(false)
+    useEffect(() => {
+        if (!!id) {
+            findById()
+        }
+    }, [])
+
+    const findById = async () => {
+        try {
+            const response = await axios.get(`/student/find?userId=${id}`)
+            if (response && response.status === 200) {
+                setUserProfile(response.data as StudentModel)
+                setUserStatus((response.data as StudentModel).user.userStatus.toUpperCase() === 'ACTIVE' )
+            }
+        } catch (error) {
+
+        }
+    }
+
+    const onBackPageClick = () => {
+        navigate(`/teacher/student?group=${params.group}&year=${params.year}&term=${params.term}`)
+    }
+
+    const onResetPasswordClick = async () => {
+        try {
+            ensureRemove('ต้องการรีเซ็ตรหัสผ่านนักศึกษาใช่หรือไม่?').then(async (res) => {
+                if (res.isConfirmed) {
+                    const response = await axios.post(`/user/reset-password`, {
+                        userId: id
+                    })
+                    if (response && response.status === 200) {
+                        successAlert(response.data.message as string)
+                    }
+                }
+            })
+        } catch (error) {
+
+        }
+    }
+
+    const onUpdateStatusClick = async() => {
+        try {
+            const response = await axios.post('/user/update-status', {
+                userId: id,
+                userStatus: userStatus === true ? 'ACTIVE' : 'INACTIVE'
+            }) 
+            if (response && response.status === 200) {
+                successAlert('อัปเดตสถานะสำเร็จ').then(() => {
+                    findById()
+                })
+            }
+        } catch (error) {
+            
+        }
+    }
+
     return (
         <div className='flex flex-col gap-2 px-2'>
             <div className='flex gap-2 items-center'>
-                <h2 className='text-secondary cursor-pointer hover:text-primary duration-200' onClick={() => navigate('/teacher/student')} >รายชื่อนักศึกษา</h2>
+                <h2 className='text-secondary cursor-pointer hover:text-primary duration-200' onClick={onBackPageClick} >รายชื่อนักศึกษา</h2>
                 <h2 className='hidden md:block text-secondary'>{'>'}</h2>
-                <h2 className='hidden md:block text-secondary'>61332110211-4</h2>
+                <h2 className='hidden md:block text-secondary'>{userProfile.user.studentNo}</h2>
             </div>
             <div className='w-full flex flex-col items-center gap-2'>
-                <img src={'https://us-fbcloud.net/quiz/data/51/51475.qst1.question.jpg'} className='w-40 h-40 rounded-full border-solid border-secondary border-4 object-cover'></img>
+                {!!!userProfile.user.image && <Avatar className='bg-secondary w-40 h-40'><Typography variant='inherit' noWrap>{userProfile.user.studentNo}</Typography></Avatar>}
+                {!!userProfile.user.image && <img src={`${import.meta.env.VITE_API_ENDPOINT}/${userProfile.user.image}`} className='w-40 h-40 rounded-full border-solid border-secondary border-4 object-cover'></img>}
                 <span>ข้อมูลส่วนตัว</span>
                 <form className='grid grid-cols-1 lg:grid-cols-2 gap-3 w-full my-3'>
                     <TextField
                         variant="outlined"
                         type={"text"}
-                        label="ชื่อ"
-                        value={userProfile.firstname}
+                        label="ชื่อไทย"
+                        value={userProfile.user.nameTH}
                         disabled
                     ></TextField>
                     <TextField
                         variant="outlined"
                         type={"text"}
-                        label="นามสกุล"
-                        value={userProfile.lastname}
+                        label="ชื่ออังกฤษ"
+                        value={userProfile.user.nameEN}
                         disabled
                     ></TextField>
                     <TextField
                         variant="outlined"
                         type={"text"}
                         label="รหัสนักศึกษา"
-                        value={userProfile.studentId}
+                        value={userProfile.user.studentNo}
                         disabled
                     ></TextField>
                     <TextField
                         variant="outlined"
                         type={"text"}
                         label="กลุ่มเรียน"
-                        value={userProfile.section}
+                        value={userProfile.room.roomGroup}
                         disabled
                     ></TextField>
+                    <div className='w-full'>
+                        <span className='hidden lg:block mr-2'>สถานะผู้ใช้งาน: </span>
+                        <span className='font-bold text-red-500'>INACTIVE</span>
+                        <Switch color='success' checked={userStatus} onChange={() => setUserStatus(!userStatus)} />
+                        <span className='font-bold text-green-500'>ACTIVE</span>
+                    </div>
+                    <div className='w-full flex items-center gap-2'>
+                        <Button color='success' variant='contained' type='button' onClick={onUpdateStatusClick}>บันทึก</Button>
+                        <Button color='info' variant='contained' type='button' onClick={onResetPasswordClick} >รีเซ็ตรหัสผ่าน</Button>
+                    </div>
                 </form>
-                <span>แบบฝึกหัด</span>
-                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 w-full'>
-                    {['', '', '', '', '', '', '', '', '',].map((m, index) => (
-                        <Card key={index} className='w-full relative'>
-                            <div className='absolute top-1 right-1 cursor-pointer'>
-                                <Tooltip title='สถานะ: เปิดรับ' placement='top'>
-                                    <div className='w-4 h-4 rounded-full bg-green-500 ring-2 ring-green-400'>
-
-                                    </div>
-                                </Tooltip>
-
-                            </div>
-                            <CardHeader
-                                title={"LAB" + (index + 1)}
-                            />
-                            <CardContent>
-                                <div className='w-full flex flex-col'>
-                                    <div className='flex gap-2 items-center'>
-                                        <span>กำหนดส่ง:</span>
-                                        <span>22 ธันวาคม 2566</span>
-                                    </div>
-                                    <div className='flex gap-2 items-center'>
-                                        <span>ประเภทงาน:</span>
-                                        <span>กลุ่ม</span>
-                                    </div>
-                                    <div className='flex gap-2 items-center'>
-                                        <span>คะแนน:</span>
-                                        <span>10</span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                            <CardActions className='flex flex-col sm:flex-row sm:justify-between items-end sm:items-end'>
-                                <Button size="medium" variant='contained' color='warning' onClick={() => navigate(`/teacher/student-submitted/${1}`)}>ตรวจงาน</Button>
-                                <Typography variant="caption" color="text.secondary">
-                                    15 มกราคม 2566
-                                </Typography>
-                            </CardActions>
-                        </Card>
-                    ))}
-                </div>
             </div>
-        </div>
+        </div >
     )
 }
 

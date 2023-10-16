@@ -1,12 +1,11 @@
+import { RoomModel } from "./RoomModel";
 import { UserModel } from "./userModel";
 
 export class StudentSectionModel {
-  id: number = 0;
-  studentId: string = "";
-  firstname: string = "";
-  lastname: string = "";
-  level: string = "";
-  section: string = "";
+  userId: number = 0;
+  studentNo: string = "";
+  nameTH: string = "";
+  nameEN: string = "";
 }
 
 export class StudentGroupResponseModel {
@@ -24,6 +23,7 @@ export class StudentModel {
   studentDate: string | Date = "";
   studentStatus: string = "ACTIVE";
   user: UserModel = new UserModel();
+  room: RoomModel = new RoomModel()
 }
 
 export class StudentGroupModel {
