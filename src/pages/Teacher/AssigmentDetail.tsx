@@ -391,7 +391,6 @@ function AssigmentDetail() {
 
               <div className='w-full'>
                 <TextEditor sendData={onContentTextChange} data={contentText.current} />
-                {/* <TextEditor sendData={onContentTextChange} data={assignmentDetailForm.assignmentDescription} /> */}
               </div>
               <div className='w-full flex flex-col gap-2 mt-16 lg:mt-10 py-3'>
                 <span className='font-bold text-primary'>อัปโหลดไฟล์</span>

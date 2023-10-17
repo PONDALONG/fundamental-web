@@ -5,6 +5,7 @@ import { lazy } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../stores/store";
 import { isSignedIn } from "../stores/slice/auth.slice";
+import StudentAssignment from "../pages/Student/StudentAssignment";
 
 const DashboardTeacherPage = lazy(() => import('../pages/Teacher/Dashboard'))
 const SectionTeacherPage = lazy(() => import('../pages/Teacher/Section'))
@@ -20,6 +21,7 @@ const SubmittedAssignmenttPage = lazy(() => import('../pages/Teacher/SubmittedAs
 const StudentProfilePage = lazy(() => import('../pages/Teacher/StudentProfile'))
 
 const AssignmentStudentPage = lazy(() => import('../pages/Student/Assignment'))
+const studentAssignmentPage = lazy(() => import('../pages/Student/StudentAssignment'))
 const ProfileStudentPage = lazy(() => import('../pages/Student/ProfileStudent'))
 
 export default function Routes() {
@@ -38,6 +40,10 @@ export default function Routes() {
                 {
                     path: '/assignment',
                     element: <AssignmentStudentPage />
+                },
+                {
+                    path: '/assignment/:id',
+                    element: <StudentAssignment />
                 },
                 {
                     path: '/profile',
