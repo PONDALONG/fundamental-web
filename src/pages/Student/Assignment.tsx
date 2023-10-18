@@ -72,7 +72,7 @@ function AssignmentStudent() {
                         </CardContent>
                         <CardActions className='flex flex-col sm:flex-row sm:justify-between items-end sm:items-end'>
                             <div className='flex flex-row gap-2'>
-                                <Button size="medium" variant='contained' color='info' disabled={assignment.assignmentStatus === 'CLOSE'}onClick={() => navigate(`/assignment/${assignment.assignmentId}`)}>รายละเอียด</Button>
+                                <Button size="medium" variant='contained' color='info' onClick={() => navigate(`/assignment/${assignment.assignmentId}`)}>รายละเอียด</Button>
                             </div>
                             <Typography variant="caption" color="text.secondary">
                                 {dayjs(new Date(assignment.assignmentStartDate)).locale('th').format('DD MMMM BBBB')}

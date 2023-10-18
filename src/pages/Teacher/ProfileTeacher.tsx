@@ -110,7 +110,7 @@ function ProfileTeacher() {
                                 <input type="file" id="upload-image" onChange={handleFileChange} className='hidden' />
                             </label>
                         )}
-                        {(!!!imagePreview && !!!imageFile && !!!userImage) && <Avatar className='w-40 h-40 bg-secondary'><Typography variant='h4'>WS</Typography></Avatar>}
+                        {(!!!imagePreview && !!!imageFile && !!!userImage) && <Avatar className='w-40 h-40 bg-secondary'><Typography variant='h4'>{userProfile?.nameTH}</Typography></Avatar>}
                         {(!!!imagePreview && !!!imageFile) && (
                             <div>
                                 <label htmlFor="upload-image" className='cursor-pointer p-2 bg-blue-500 rounded text-white hover:bg-blue-700 duration-300'>

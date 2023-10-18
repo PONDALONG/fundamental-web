@@ -112,6 +112,7 @@ function AssigmentDetail() {
         contentText.current = response.data.assignmentDescription
         setAssignmentStatus(response.data.assignmentStatus === 'OPEN')        
         setAssignmentType(response.data.assignmentType)
+        setEndDate(dayjs(new Date(response.data.assignmentEndDate)))
         if ((response?.data?.assignmentType as string).toLocaleUpperCase() === 'GROUP') {
           findStudentAssignment()
         }
@@ -328,6 +329,7 @@ function AssigmentDetail() {
                   <DateTimePicker
                     label="กำหนดส่ง"
                     defaultValue={endDate}
+                    value={endDate}
                     onChange={(e) => setEndDate(dayjs(e))}
                   />
                 </div>

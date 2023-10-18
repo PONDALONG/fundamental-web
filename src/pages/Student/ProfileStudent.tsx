@@ -1,7 +1,14 @@
 import { Avatar, Button, Divider, Typography, TextField, Box } from '@mui/material'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as yup from "yup";
 import { Formik } from "formik";
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../stores/store';
+import { UserModel } from '../../types/userModel';
+import axios from 'axios';
+import { StudentModel } from '../../types/StudentModel';
+import { ImageViewAlert, successAlert, waringAlert } from '../../utils/SweetAlert';
+import { setUser } from '../../stores/slice/user.slice';
 
 type PasswordModel = {
     old_pass: string,
@@ -21,16 +28,31 @@ const passwordSchema = yup.object().shape({
     new_pass2: yup.string().required("กรุณากรอกยืนยันรหัสผ่านใหม่"),
 });
 function ProfileStudent() {
+    const userImage = useSelector((state: RootState) => state.userReducer.image)
+    const userStore = useSelector((state: RootState) => state.userReducer)
+    const userDispatch = useDispatch()
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [imagePreview, setImagePreview] = useState<string>('');
-    const [userProfile, setUserProfile] = useState<any>({
-        firstname: "Winai",
-        lastname: "Sriburin",
-        studentId: "555555555555",
-        section: "ecp1n"
-    })
+    const [userProfile, setUserProfile] = useState<StudentModel>(new StudentModel())
 
 
+
+    useEffect(() => {
+        getProfile()
+    }, [])
+
+    const getProfile = async () => {
+        try {
+            const response = await axios.get('/user/me')
+            if (response && response.status === 200) {
+                console.log(response.data);
+
+                setUserProfile(response.data as StudentModel)
+            }
+        } catch (error) {
+
+        }
+    }
 
     const handleFileChange = (e: any) => {
         if (e?.target?.files && e?.target?.files[0]) {
@@ -45,9 +67,47 @@ function ProfileStudent() {
         setImagePreview('')
     }
 
-    const onSubmitPassword = (values: PasswordModel) => {
-        console.log(values);
-        
+    const updateProfile = async () => {
+        try {
+            let formData = new FormData
+            if (imageFile) {
+                formData.append('file', imageFile)
+            }
+            const response = await axios.post('/user/update-profile', formData)
+            if (response && response.status === 200) {
+                successAlert('อัปเดตโปรไฟล์สำเร็จ').then(() => {
+                    setImageFile(null)
+                    setImagePreview('')
+                    userDispatch(setUser(response.data as UserModel))
+                })
+            }
+        } catch (error) {
+
+        }
+    }
+
+    const onSubmitPassword = async(values: PasswordModel) => {
+        try {
+            if (values.new_pass !== values.new_pass2) {
+                return waringAlert('รหัสผ่านใหม่ไม่เหมือนกัน')
+            }
+            if (values.old_pass === values.new_pass || values.old_pass === values.new_pass2) {
+                return waringAlert('รหัสผ่านใหม่และรหัสผ่านเดิมซ้ำกัน')
+            }
+
+            const response = await axios.post('/user/change-password', {
+                oldPassword: values.old_pass,
+                newPassword: values.new_pass
+            })
+            if (response && response.status === 200) {
+                successAlert(response.data.message as string).then(() => {
+                    window.location.reload()
+                })
+            }
+        } catch (error) {
+
+        }
+
     }
     return (
         <div className='flex flex-col items-center gap-2 px-2 w-full'>
@@ -55,13 +115,16 @@ function ProfileStudent() {
                 <div className='flex flex-col gap-3 items-center w-full px-3'>
                     <h2 className='text-secondary'>ข้อมูลส่วนตัว</h2>
                     <div className='flex flex-col items-center gap-5'>
+                        {(!!!imagePreview && !!!imageFile && !!userImage) && (
+                            <img src={`${import.meta.env.VITE_API_ENDPOINT}/${userImage}`} className='w-40 h-40 rounded-full border-solid border-secondary border-4 object-cover cursor-pointer' onClick={() => ImageViewAlert(`${import.meta.env.VITE_API_ENDPOINT}/${userImage}`)}></img>
+                        )}
                         {(!!imagePreview && !!imageFile) && (
                             <label htmlFor="upload-image">
                                 <img src={imagePreview} className='w-40 h-40 rounded-full border-solid border-secondary border-4 object-cover'></img>
                                 <input type="file" id="upload-image" onChange={handleFileChange} className='hidden' />
                             </label>
                         )}
-                        {(!!!imagePreview && !!!imageFile) && <Avatar className='w-40 h-40 bg-secondary'><Typography variant='h4'>WS</Typography></Avatar>}
+                        {(!!!imagePreview && !!!imageFile && !!!userImage) && <Avatar className='w-40 h-40 bg-secondary'><Typography variant='h4' noWrap>{userProfile.user.studentNo}</Typography></Avatar>}
                         {(!!!imagePreview && !!!imageFile) && (
                             <div>
                                 <label htmlFor="upload-image" className='cursor-pointer p-2 bg-blue-500 rounded text-white hover:bg-blue-700 duration-300'>
@@ -72,7 +135,7 @@ function ProfileStudent() {
                         )}
                         {(!!imagePreview && !!imageFile) && (
                             <div className='flex justify-center items-center gap-2'>
-                                <Button variant='contained' color='success'>บันทึก</Button>
+                                <Button variant='contained' color='success' onClick={updateProfile}>บันทึก</Button>
                                 <Button variant='contained' color='inherit' onClick={clearImageFile}>ยกเลิก</Button>
                             </div>
                         )}
@@ -82,29 +145,29 @@ function ProfileStudent() {
                         <TextField
                             variant="outlined"
                             type={"text"}
-                            label="ชื่อ"
-                            value={userProfile.firstname}
+                            label="ชื่อภาษาไทย"
+                            value={userProfile.user.nameTH}
                             disabled
                         ></TextField>
                         <TextField
                             variant="outlined"
                             type={"text"}
-                            label="นามสกุล"
-                            value={userProfile.lastname}
+                            label="ชื่อภาษาอังกฤษ"
+                            value={userProfile.user.nameEN}
                             disabled
                         ></TextField>
                         <TextField
                             variant="outlined"
                             type={"text"}
                             label="รหัสนักศึกษา"
-                            value={userProfile.studentId}
+                            value={userProfile.user.studentNo}
                             disabled
                         ></TextField>
                         <TextField
                             variant="outlined"
                             type={"text"}
                             label="กลุ่มเรียน"
-                            value={userProfile.section}
+                            value={`${userProfile.room.roomGroup} ${userProfile.room.roomTerm}/${userProfile.room.roomYear}`}
                             disabled
                         ></TextField>
                     </form>

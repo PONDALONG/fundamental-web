@@ -25,8 +25,10 @@ import BookIcon from '@mui/icons-material/Book';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Logout from '@mui/icons-material/Logout';
 import { logoutAlert } from '../utils/SweetAlert';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { clearUser } from '../stores/slice/user.slice';
+import { UserModel } from '../types/userModel';
+import { RootState } from '../stores/store';
 const drawerWidth = 240;
 
 interface Props {
@@ -40,8 +42,11 @@ interface Props {
 export default function ProtectedStudentRoute(props: Props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const userDispatch = useDispatch()
   const navigate = useNavigate()
+
+  const user: UserModel = useSelector((state: RootState) => state.userReducer)
+  const userDispatch = useDispatch()
+
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -66,17 +71,17 @@ export default function ProtectedStudentRoute(props: Props) {
   }
   const sideBarMenu = [
     {
-        title: 'แบบฝึกหัด',
-        to: '/assignment',
-        isShow: true,
-        icon: <AssignmentIcon />
-      },
-      {
-        title: 'ข้อมูลส่วนตัว',
-        to: '/profile',
-        isShow: true,
-        icon: <AccountCircleIcon />
-      },
+      title: 'แบบฝึกหัด',
+      to: '/assignment',
+      isShow: true,
+      icon: <AssignmentIcon />
+    },
+    {
+      title: 'ข้อมูลส่วนตัว',
+      to: '/profile',
+      isShow: true,
+      icon: <AccountCircleIcon />
+    },
   ]
 
   const drawer = (
@@ -160,7 +165,8 @@ export default function ProtectedStudentRoute(props: Props) {
                   aria-haspopup="true"
                   aria-expanded={openMenu ? 'true' : undefined}
                 >
-                  <Avatar className='bg-secondary'>WS</Avatar>
+                  {!user.image && <Avatar className='bg-secondary'>{!!user.studentNo ? user.studentNo.charAt(0) + user.studentNo.charAt(1) : ''}</Avatar>}
+                  {!!user.image && <Avatar className='bg-secondary' src={`${import.meta.env.VITE_API_ENDPOINT}/${user.image}`}></Avatar>}
                 </IconButton>
                 <Menu
                   anchorEl={anchorEl}
@@ -172,8 +178,8 @@ export default function ProtectedStudentRoute(props: Props) {
                   anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                   sx={{ width: 200 }}
                 >
-                  <MenuItem>
-                    <Typography variant='inherit' noWrap>วินัย ศรีบุริน</Typography>
+                  <MenuItem onClick={() => navigate('/profile')}>
+                    <Typography variant='inherit' noWrap>{!!user.nameTH ? user.nameTH : ''}</Typography>
                   </MenuItem>
                   <Divider />
                   <MenuItem onClick={handleLogoutClick}>
