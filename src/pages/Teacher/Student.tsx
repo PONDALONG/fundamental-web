@@ -236,7 +236,7 @@ export default function Student() {
             IMPORT รายชื่อนักศึกษา
             <input type="file" id="import-file" ref={importFile} accept='.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel' onChange={handleFileChange} className='hidden' />
           </label>
-          <Button variant='contained' color='success'>template<DownloadIcon fontSize='small' /></Button>
+          <Button variant='contained' color='success' href='/template_import_student.xlsx' download={true}>template<DownloadIcon fontSize='small' /></Button>
         </div>
       </div>
 
