@@ -1,6 +1,6 @@
 import { Card, Typography, CardActions, Button, CardContent, FormControl, CardHeader, Tooltip } from '@mui/material'
 import { useState, useEffect } from 'react'
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AssignmentModel } from '../../types/AssignmentModel';
@@ -9,6 +9,7 @@ import { GroupListModel, TermListModel, YearListModel } from '../../types/RoomMo
 import dayjs from 'dayjs';
 import "dayjs/locale/th";
 import buddhistEra from "dayjs/plugin/buddhistEra";
+import { dateCountdown } from '../../utils/DateCountdown';
 dayjs.extend(buddhistEra)
 function Assignment() {
   const [assignmentList, setAssignmentList] = useState<AssignmentModel[]>([])
@@ -33,8 +34,6 @@ function Assignment() {
   useEffect(() => {
     checkParams()
     fetchGroup()
-    console.log(selectGroup, selectYear, selectTerm);
-
     if (!!selectGroup && !!selectYear && !!selectTerm) {
       fetchAssignment(selectGroup, selectYear, selectTerm)
       findRoomId(selectGroup, selectYear, selectTerm)
@@ -124,7 +123,7 @@ function Assignment() {
     }
   }
 
-  const findRoomId = async(group: string, year: string, term: number | string) => {
+  const findRoomId = async (group: string, year: string, term: number | string) => {
     try {
       let response = await axios.get(`/room/find-YGT?roomGroup=${group}&roomYear=${year}&roomTerm=${term}`)
       if (response && response.status === 200) {
@@ -133,7 +132,7 @@ function Assignment() {
         }
       }
     } catch (error) {
-      
+
     }
   }
 
@@ -190,7 +189,7 @@ function Assignment() {
 
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2'>
         {(assignmentList && assignmentList.length > 0) && assignmentList.map((assignment, index) => (
-          <Card key={assignment.assignmentId} className='w-full relative'>
+          <Card key={index} className='w-full relative'>
             <div className='absolute top-1 right-1 cursor-pointer'>
               {assignment.assignmentStatus.toUpperCase() === 'OPEN' && (
                 <Tooltip title='สถานะ: เปิดรับ' placement='top'>
@@ -214,6 +213,12 @@ function Assignment() {
                   <span>กำหนดส่ง:</span>
                   <span>{dayjs(new Date(assignment.assignmentEndDate)).locale('th').format('DD MMMM BBBB')}</span>
                 </div>
+                {new Date(assignment.assignmentEndDate).getTime() > new Date().getTime() && (
+                  <span className='my-1'>{dateCountdown(new Date(assignment.assignmentEndDate))}</span>
+                )}
+                {new Date(assignment.assignmentEndDate).getTime() < new Date().getTime() && (
+                  <span className='my-1 text-red-500'>(เลยกำหนด)</span>
+                )}
                 <div className='flex gap-2 items-center'>
                   <span>ประเภทงาน:</span>
                   {assignment.assignmentType.toUpperCase() === 'INDIVIDUAL' && <span>เดี่ยว</span>}

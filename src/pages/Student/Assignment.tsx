@@ -9,6 +9,7 @@ import "dayjs/locale/th";
 import buddhistEra from "dayjs/plugin/buddhistEra";
 import { AssignmentModel } from '../../types/AssignmentModel';
 import axios from 'axios';
+import { dateCountdown } from '../../utils/DateCountdown';
 dayjs.extend(buddhistEra)
 
 function AssignmentStudent() {
@@ -57,8 +58,14 @@ function AssignmentStudent() {
                             <div className='w-full flex flex-col'>
                                 <div className='flex gap-2 items-center'>
                                     <span>กำหนดส่ง:</span>
-                                    <span>{dayjs(new Date(assignment.assignmentEndDate)).locale('th').format('DD MMMM BBBB')}</span>
+                                    <span>{dayjs(new Date(assignment.assignmentEndDate)).locale('th').format('DD MMMM BBBB HH:mm')}</span>
                                 </div>
+                                {new Date(assignment.assignmentEndDate).getTime() > new Date().getTime() && (
+                                    <span className='my-1'>{dateCountdown(new Date(assignment.assignmentEndDate))}</span>
+                                )}
+                                {new Date(assignment.assignmentEndDate).getTime() < new Date().getTime() && (
+                                    <span className='my-1 text-red-500'>(เลยกำหนด)</span>
+                                )}
                                 <div className='flex gap-2 items-center'>
                                     <span>ประเภทงาน:</span>
                                     {assignment.assignmentType.toUpperCase() === 'INDIVIDUAL' && <span>เดี่ยว</span>}

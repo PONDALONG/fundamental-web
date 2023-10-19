@@ -168,7 +168,6 @@ function AssigmentDetail() {
     assignment.assignmentStartDate = new Date().toISOString()
     assignment.assignmentId = value.assignmentId
     assignment.roomId = value.roomId
-    console.log(assignment);
 
     if (!!id) {
       await updateAssignment(assignment)

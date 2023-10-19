@@ -130,8 +130,6 @@ function SubmitIndividual({ assignmentId }: Input) {
                 setSubmittedList(temp)
             }
         } catch (error) {
-            console.log(error);
-
         }
     }
 

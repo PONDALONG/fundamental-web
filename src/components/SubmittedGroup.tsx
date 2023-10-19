@@ -1,6 +1,6 @@
 import { Box, Button } from '@mui/material';
 import MUIDataTable from 'mui-datatables'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { StudentAssignmentGroupResponseModel, StudentSubmitGroupModel } from '../types/StudentModel';
 import axios from 'axios';
@@ -25,7 +25,7 @@ function SubmittedGroup({ assignmentId }: Input) {
                 filter: false,
                 sort: false,
             },
-            customBodyRender: (value: string, tableMeta: any, updateValue: any) => {
+            customBodyRender: (value: string) => {
                 <span>{value}</span>
             }
         },
@@ -35,7 +35,7 @@ function SubmittedGroup({ assignmentId }: Input) {
             options: {
                 filter: false,
                 sort: false,
-                customBodyRender: (value: string[], tableMeta: any, updateValue: any) => {
+                customBodyRender: (value: string[]) => {
                     return (
                         <div className='flex flex-col'>
                             {value.map((v, index) => (
@@ -52,7 +52,7 @@ function SubmittedGroup({ assignmentId }: Input) {
             options: {
                 filter: false,
                 sort: false,
-                customBodyRender: (value: string[], tableMeta: any, updateValue: any) => {
+                customBodyRender: (value: string[]) => {
                     return (
                         <div className='flex flex-col'>
                             {value.map((v, index) => (
@@ -69,7 +69,7 @@ function SubmittedGroup({ assignmentId }: Input) {
             options: {
                 filter: false,
                 sort: false,
-                customBodyRender: (value: string, tableMeta: any, updateValue: any) => {
+                customBodyRender: (value: string) => {
                     return (
                         <Box>
                             {String(value).toUpperCase() === 'SUBMITTED' && (
@@ -92,7 +92,7 @@ function SubmittedGroup({ assignmentId }: Input) {
             options: {
                 filter: false,
                 sort: false,
-                customBodyRender: (value: Date | null, tableMeta: any, updateValue: any) => {
+                customBodyRender: (value: Date | null) => {
                     return (
                         <>
                             {!!value && <Box>
@@ -118,7 +118,7 @@ function SubmittedGroup({ assignmentId }: Input) {
             options: {
                 filter: false,
                 sort: false,
-                customBodyRender: (value: number, tableMeta: any, updateValue: any) => {
+                customBodyRender: (value: number, tableMeta: any) => {
                     return (
                         <Box display={"flex"} flexDirection={{ xs: "column", sm: "row" }} gap={1} justifyContent={"center"} alignItems={"center"} width={{ xs: "100%", lg: "50%" }}>
                             {String(tableMeta.rowData[3]).toUpperCase() !== 'WAITING' && (
@@ -160,8 +160,6 @@ function SubmittedGroup({ assignmentId }: Input) {
 
             }
         } catch (error) {
-            console.log(error);
-
         }
     }
 

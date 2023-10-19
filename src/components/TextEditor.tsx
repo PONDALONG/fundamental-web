@@ -1,17 +1,11 @@
-import React, {useEffect, useState} from 'react'
 import 'quill/dist/quill.snow.css'
 import ReactQuill from 'react-quill'
-import {forwardRef, useImperativeHandle, useRef} from 'react';
 type TextEditorInput = {
     sendData: (content: string) => void,
     data: string
   }
 
 const TextEditor  = ({ sendData, data }: TextEditorInput) => {
-    useEffect(() => {
-        console.log(data);
-        
-    }, [])
 
     const modules = {
         toolbar: [

@@ -1,5 +1,5 @@
-import { Avatar, Button, Divider, Typography, TextField, Box } from '@mui/material'
-import React, { useEffect, useState } from 'react'
+import { Avatar, Button, Typography, TextField, Box } from '@mui/material'
+import { useEffect, useState } from 'react'
 import * as yup from "yup";
 import { Formik } from "formik";
 import { useDispatch, useSelector } from 'react-redux';
@@ -29,7 +29,6 @@ const passwordSchema = yup.object().shape({
 });
 function ProfileStudent() {
     const userImage = useSelector((state: RootState) => state.userReducer.image)
-    const userStore = useSelector((state: RootState) => state.userReducer)
     const userDispatch = useDispatch()
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [imagePreview, setImagePreview] = useState<string>('');
@@ -45,8 +44,6 @@ function ProfileStudent() {
         try {
             const response = await axios.get('/user/me')
             if (response && response.status === 200) {
-                console.log(response.data);
-
                 setUserProfile(response.data as StudentModel)
             }
         } catch (error) {
