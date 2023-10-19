@@ -1,12 +1,13 @@
 import { FormControl, MenuItem, Select, Button, Box } from '@mui/material'
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import DownloadIcon from '@mui/icons-material/Download';
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { StudentModel, StudentSectionModel } from '../../types/StudentModel'
 import MUIDataTable from 'mui-datatables'
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import { waringAlert } from '../../utils/SweetAlert';
+import { ensureRemove, successAlert, waringAlert } from '../../utils/SweetAlert';
+import ImportResultModal from '../../components/ImportResultModal';
 
 export default function Student() {
   const navigate = useNavigate()
@@ -22,6 +23,17 @@ export default function Student() {
   const [selectGroup, setSelectGroup] = useState<string>('')
   const [selectYear, setSelectYear] = useState<number | string>('')
   const [selectTerm, setSelectTerm] = useState<number>(1)
+  const importFile = useRef(null)
+  const [showDialog, setShowDialog] = useState<boolean>(false)
+  const [resultData, setResultData] = useState<any[]>([])
+  const setShowDialogOpen = () => {
+    setShowDialog(true)
+  }
+
+  const setShowDialogClose = async() => {
+    setShowDialog(false)
+    window.location.reload()
+  }
   const columns = [
     {
       name: "studentNo",
@@ -67,8 +79,12 @@ export default function Student() {
   ];
 
   useEffect(() => {
-    fetchDropdown()
-  }, [])
+    if (resultData.length > 0) {
+      setShowDialogOpen()
+    } else {
+      fetchDropdown()
+    }
+  }, [resultData])
 
   const fetchDropdown = async () => {
     try {
@@ -124,6 +140,50 @@ export default function Student() {
     } catch (error) {
 
     }
+  }
+
+  const handleFileChange = async (e: any) => {
+    if (!selectGroup || !selectYear || !selectTerm) {
+      return waringAlert('กรุณากรอกตัวกรองให้ครบ').then(() => window.location.reload())
+    }
+    try {
+      if (e?.target?.files && e?.target?.files[0]) {
+        let response = await axios.get(`/room/find-YGT?roomGroup=${selectGroup}&roomYear=${selectYear}&roomTerm=${selectTerm}`)
+        if (response && response.status === 200) {
+          if (response.data.roomId) {
+            let roomId = response.data.roomId as number
+            importFile.current = e?.target?.files[0]
+            ensureRemove(`ต้องการอัปโหลดรายชื่อที่ ${selectGroup} ${selectTerm}/${selectYear} ใช่หรือไม่?`).then(async (check) => {
+              if (check.isConfirmed) {
+                let formData = new FormData()
+                formData.append('roomId', roomId.toString())
+                if (!!importFile.current) {
+                  formData.append('file', importFile.current)
+                  let res = await axios.post('/student/import', formData)
+                  if (res && res.status === 200) {
+                    setResultData(res.data as any[])
+                    setShowDialogOpen()
+                  }
+                } else {
+                  waringAlert('เกิดข้อผิดพลาด ไม่พบไฟล์').then(() => {
+                    window.location.reload()
+                  })
+                }
+
+              }
+            })
+          }
+        } else {
+          return waringAlert('ไม่พบกลุ่มเรียนนี้ กรุณาเพิ่มกลุ่มเรียน').then(() => {
+            window.location.reload()
+          })
+        }
+      } else {
+        window.location.reload()
+      }
+    } catch (error) {
+
+    }
 
 
   }
@@ -172,8 +232,11 @@ export default function Student() {
           <Button variant='contained' onClick={onSearchClick}>ค้นหา</Button>
         </div>
         <div className='w-full flex justify-end px-2 gap-2'>
-          <Button variant='contained' color='info'>นำเข้ารายชื่อนักศึกษา <FileUploadIcon fontSize='small' /></Button>
-          <Button variant='contained' color='success'>ดาวน์โหลดแบบฟอร์มสำหรับนำเข้า<DownloadIcon fontSize='small' /></Button>
+          <label htmlFor="import-file" className='cursor-pointer p-2 bg-blue-500 rounded text-white hover:bg-blue-700 duration-300'>
+            IMPORT รายชื่อนักศึกษา
+            <input type="file" id="import-file" ref={importFile} accept='.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel' onChange={handleFileChange} className='hidden' />
+          </label>
+          <Button variant='contained' color='success'>template<DownloadIcon fontSize='small' /></Button>
         </div>
       </div>
 
@@ -204,6 +267,7 @@ export default function Student() {
           }}
         />
       </div>
+      {showDialog && <ImportResultModal open={showDialog} handleDialogClose={setShowDialogClose} data={resultData}></ImportResultModal>}
     </div>
   )
 }

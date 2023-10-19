@@ -174,22 +174,8 @@ function SubmittedGroup({ assignmentId }: Input) {
                 options={{
                     elevation: 0,
                     download: false,
-                    filter: false, print: false, downloadOptions: { filename: `รายชื่อนักเรียนที่ส่งงาน ecp1n 2/2566` }, onDownload: (buildHead, buildBody, columns, data) => {
-                        if (columns.length > 0) {
-                            columns.pop()
-                        }
-                        if (data && data.length > 0) {
-                            for (let d of data) {
-                                d.data.pop()
-                            }
-                        }
-                        let sum = 0
-                        for (let i of data) {
-
-                            sum += i.data[3]
-                        }
-                        return "\uFEFF" + buildHead(columns) + buildBody(data) + '\n' + `"","","รวม","${sum}"\n`;
-                    },
+                    filter: false, 
+                    print: false, 
                     selectableRows: 'none',
                     textLabels: {
                         body: {
