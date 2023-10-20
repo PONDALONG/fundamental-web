@@ -29,6 +29,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { clearUser } from '../stores/slice/user.slice';
 import { UserModel } from '../types/userModel';
 import { RootState } from '../stores/store';
+import SideBarLogo from '/sidebar-logo.jpg'
 const drawerWidth = 240;
 
 interface Props {
@@ -86,7 +87,9 @@ export default function ProtectedStudentRoute(props: Props) {
 
   const drawer = (
     <div>
-      <Toolbar />
+      <Toolbar className='flex justify-center items-center'>
+        <img src={SideBarLogo} height={50} alt="" />
+      </Toolbar>
       <Divider />
       <List>
         {sideBarMenu.map((menu, index) => (

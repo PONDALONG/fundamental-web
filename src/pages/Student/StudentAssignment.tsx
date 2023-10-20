@@ -48,7 +48,7 @@ function StudentAssignment() {
             const response = await axios.get(`/student-assignment/my-assignment?assignmentId=${id}`)
             if (response && response.status === 200) {
                 setStudentAssignment(response.data)
-                contentText.current = (response.data as StudentAssignmentModel).stdAsmResult as string
+                contentText.current = (response.data as StudentAssignmentModel).stdAsmResult || ""
             }
         } catch (error) {
 

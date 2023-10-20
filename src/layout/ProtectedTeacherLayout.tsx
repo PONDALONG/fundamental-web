@@ -29,6 +29,7 @@ import { UserModel } from '../types/userModel';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../stores/store'
 import { clearUser, setUser } from '../stores/slice/user.slice';
+import SideBarLogo from '/sidebar-logo.jpg'
 const drawerWidth = 240;
 
 interface Props {
@@ -46,7 +47,7 @@ export default function ProtectedTeacherRoute(props: Props) {
 
   const user: UserModel = useSelector((state: RootState) => state.userReducer)
   const userDispatch = useDispatch()
-  
+
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -111,7 +112,9 @@ export default function ProtectedTeacherRoute(props: Props) {
 
   const drawer = (
     <div>
-      <Toolbar />
+      <Toolbar className='flex justify-center items-center'>
+        <img src={SideBarLogo} height={50} alt="" />
+      </Toolbar>
       <Divider />
       <List>
         {sideBarMenu.map((menu, index) => (

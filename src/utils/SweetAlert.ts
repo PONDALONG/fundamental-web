@@ -50,7 +50,7 @@ export const ImageViewAlert = (url: string) => {
     return Swal.fire({
         width:'500px',
         imageWidth: '100%',
-        imageHeight: '100%',
+        imageHeight: '80%',
         imageUrl: url,
         showConfirmButton:false,
         background:'rgba(0, 0, 0, 0)',

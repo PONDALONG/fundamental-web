@@ -8,6 +8,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { ensureRemove, successAlert, waringAlert } from '../../utils/SweetAlert';
 import ImportResultModal from '../../components/ImportResultModal';
+import { GroupListModel, TermListModel, YearListModel } from '../../types/RoomModel';
 
 export default function Student() {
   const navigate = useNavigate()
@@ -18,11 +19,12 @@ export default function Student() {
     term: searchParams.get('term') || null,
   }
   const [studentList, setStudentList] = useState<StudentSectionModel[]>([])
-  const [groupList, setGroupList] = useState<string[]>([])
-  const [yearList, setYearList] = useState<number[]>([])
+  const [groupList, setGroupList] = useState<GroupListModel[]>([])
+  const [yearList, setYearList] = useState<YearListModel[]>([])
+  const [termList, setTermList] = useState<TermListModel[]>([])
   const [selectGroup, setSelectGroup] = useState<string>('')
   const [selectYear, setSelectYear] = useState<number | string>('')
-  const [selectTerm, setSelectTerm] = useState<number>(1)
+  const [selectTerm, setSelectTerm] = useState<number | string>(1)
   const importFile = useRef(null)
   const [showDialog, setShowDialog] = useState<boolean>(false)
   const [resultData, setResultData] = useState<any[]>([])
@@ -30,7 +32,7 @@ export default function Student() {
     setShowDialog(true)
   }
 
-  const setShowDialogClose = async() => {
+  const setShowDialogClose = async () => {
     setShowDialog(false)
     window.location.reload()
   }
@@ -71,6 +73,9 @@ export default function Student() {
               <Button fullWidth color='warning' variant='contained' onClick={() => navigate(`/teacher/student/${value}?group=${selectGroup}&year=${selectYear}&term=${selectTerm}`)}>
                 แก้ไข
               </Button>
+              <Button fullWidth color='error' variant='contained' onClick={() => removeStudent(value)}>
+                ลบ
+              </Button>
             </Box>
           )
         }
@@ -82,20 +87,19 @@ export default function Student() {
     if (resultData.length > 0) {
       setShowDialogOpen()
     } else {
-      fetchDropdown()
+      fetchGroup()
+      checkParams()
+      if (!!selectGroup && !!selectYear && !!selectTerm) {
+        onSearchClick()
+      }
     }
-  }, [resultData])
+  }, [resultData, selectGroup, selectYear, selectTerm])
 
-  const fetchDropdown = async () => {
+  const fetchGroup = async () => {
     try {
-      const response = await axios.get('/student/dropdown-filter')
+      const response = await axios.get('/room/filterGroups')
       if (response && response.status === 200) {
-        setGroupList(response.data?.groups as string[])
-        setYearList(response.data?.years as number[])
-        setFilter()
-        if (!!selectGroup && !!selectYear && !!selectTerm) {
-          onSearchClick()
-        }
+        setGroupList(response.data as GroupListModel[])
       }
     } catch (error) {
 
@@ -109,13 +113,72 @@ export default function Student() {
     setSearchParams(searchParams)
   }
 
-  const setFilter = async () => {
-    if (!!params.group && !!params.year && !!params.term) {
-      setSelectGroup(params.group)
-      setSelectYear(+params.year)
-      setSelectTerm(Number(params.term))
-      clearParams()
+  const checkParams = async () => {
+    if (!!params.group && !!params.term && !!params.year) {
+      const responseYear = await axios(`/room/filterYears?group=${params.group}`)
+      if (responseYear && responseYear.status === 200) {
+        setYearList(responseYear.data)
+        const responseTerm = await axios.get(`/room/filterTerms?group=${params.group}&year=${params.year}`)
+        if (responseTerm && responseTerm.status === 200) {
+          setTermList(responseTerm.data)
+          setSelectGroup(params.group)
+          setSelectYear(params.year)
+          setSelectTerm(params.term)
+        }
+      }
     }
+  }
+
+  const onSelectGroup = async (group: string) => {
+    clearParams()
+    setSelectGroup(group)
+    setSelectTerm('')
+    setSelectYear('')
+    setYearList([])
+    setTermList([])
+    const response = await axios.get(`/room/filterYears?group=${group}`)
+    if (response && response.status === 200) {
+      setYearList(response.data as YearListModel[])
+    }
+  }
+
+  const onSelectYear = async (group: string, year: string) => {
+    clearParams()
+    try {
+      setSelectYear(year)
+      setSelectTerm('')
+      setTermList([])
+      const response = await axios.get(`/room/filterTerms?group=${group}&year=${year}`)
+      if (response && response.status === 200) {
+        setTermList(response.data)
+      }
+    } catch (error) {
+
+    }
+
+  }
+
+  const onSelectTerm = async (term: number | string) => {
+    try {
+      clearParams()
+      setSelectTerm(term)
+    } catch (error) {
+
+    }
+  }
+
+  const removeStudent = (userId: number) => {
+    ensureRemove('ต้องการลบนักศึกษาคนนี้ใช่หรือไม่?').then(async(check) => {
+      if (check.isConfirmed) {
+        const response = await axios.delete(`/user/delete?userId=${userId}`)
+        if (response && response.status === 200) {
+          successAlert(response.data.message).then(() => {
+            onSearchClick()
+          })
+        }
+      }
+      
+    })
   }
 
   const onSearchClick = async () => {
@@ -199,8 +262,9 @@ export default function Student() {
               <Select
                 value={selectGroup}
               >
+
                 {(groupList && groupList.length > 0) && groupList.map((group, index) => (
-                  <MenuItem key={index} value={group} onClick={() => setSelectGroup(group)}>{group}</MenuItem>
+                  <MenuItem key={index} value={group.roomGroup} onClick={() => onSelectGroup(group.roomGroup)} >{group.roomGroup}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -212,7 +276,7 @@ export default function Student() {
                 value={selectYear}
               >
                 {(yearList && yearList.length > 0) && yearList.map((year, index) => (
-                  <MenuItem key={index} value={year} onClick={() => setSelectYear(year)} >{year}</MenuItem>
+                  <MenuItem key={index} value={year.roomYear} onClick={() => onSelectYear(selectGroup, year.roomYear)} >{year.roomYear}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -223,13 +287,12 @@ export default function Student() {
               <Select
                 value={selectTerm}
               >
-                <MenuItem value={1} onClick={() => setSelectTerm(1)}>1</MenuItem>
-                <MenuItem value={2} onClick={() => setSelectTerm(2)}>2</MenuItem>
-                <MenuItem value={3} onClick={() => setSelectTerm(3)}>3</MenuItem>
+                {(termList && termList.length > 0) && termList.map((term, index) => (
+                  <MenuItem key={index} value={term.roomTerm} onClick={() => onSelectTerm(term.roomTerm)} >{term.roomTerm}</MenuItem>
+                ))}
               </Select>
             </FormControl>
           </div>
-          <Button variant='contained' onClick={onSearchClick}>ค้นหา</Button>
         </div>
         <div className='w-full flex justify-end px-2 gap-2'>
           <label htmlFor="import-file" className='cursor-pointer p-2 bg-blue-500 rounded text-white hover:bg-blue-700 duration-300'>
@@ -247,6 +310,7 @@ export default function Student() {
           columns={columns}
           options={{
             elevation: 0,
+            download: false,
             filter: false, print: false, downloadOptions: { filename: `รายชื่อนักศึกษากลุ่มเรียน ecp1n 2/2566` }, onDownload: (buildHead, buildBody, columns, data) => {
               if (columns.length > 0) {
                 columns.pop()

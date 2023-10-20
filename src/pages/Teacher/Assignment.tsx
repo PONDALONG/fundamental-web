@@ -6,10 +6,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AssignmentModel } from '../../types/AssignmentModel';
 import axios from 'axios';
 import { GroupListModel, TermListModel, YearListModel } from '../../types/RoomModel';
+import DeleteIcon from '@mui/icons-material/Delete';
 import dayjs from 'dayjs';
 import "dayjs/locale/th";
 import buddhistEra from "dayjs/plugin/buddhistEra";
 import { dateCountdown } from '../../utils/DateCountdown';
+import { ensureRemove, successAlert } from '../../utils/SweetAlert';
 dayjs.extend(buddhistEra)
 function Assignment() {
   const [assignmentList, setAssignmentList] = useState<AssignmentModel[]>([])
@@ -136,6 +138,19 @@ function Assignment() {
     }
   }
 
+  const onDeleteAssignment = (id: number, assignmentName: string) => {
+    ensureRemove(`ต้องการลบ ${assignmentName} ใช่หรือไม่?`).then(async(check) => {
+      if (check.isConfirmed) {
+        const response = await axios.delete(`/assignment/delete?assignmentId=${id}`)
+        if (response && response.status === 200) {
+          successAlert(response.data.message as string).then(() => {
+            fetchAssignment(selectGroup, selectYear, selectTerm)
+          })
+        }
+      }
+    })
+  }
+
   return (
     <div className='flex flex-col gap-2 px-2 w-full'>
       <h2 className='text-secondary'>แบบฝึกหัด</h2>
@@ -190,7 +205,10 @@ function Assignment() {
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2'>
         {(assignmentList && assignmentList.length > 0) && assignmentList.map((assignment, index) => (
           <Card key={index} className='w-full relative'>
-            <div className='absolute top-1 right-1 cursor-pointer'>
+            <div className='absolute top-1 right-1 cursor-pointer flex gap-2'>
+            <Tooltip title='ลบ' className='text-base hover:text-red-500 duration-200 cursor-pointer'>
+                <DeleteIcon fontSize='large' className='text-base' onClick={() => onDeleteAssignment(assignment.assignmentId, `${assignment.assignmentName}`)} />
+              </Tooltip>
               {assignment.assignmentStatus.toUpperCase() === 'OPEN' && (
                 <Tooltip title='สถานะ: เปิดรับ' placement='top'>
                   <div className='w-4 h-4 rounded-full bg-green-500 ring-2 ring-green-400'>

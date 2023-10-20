@@ -8,6 +8,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import { RoomModel } from '../../types/RoomModel';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ensureRemove, successAlert } from '../../utils/SweetAlert';
 function Section() {
   const navigate = useNavigate()
   const [dialogOpen, setDialogOpen] = useState<boolean>(false)
@@ -67,6 +68,19 @@ function Section() {
     handleDialogOpen()
   }
 
+  const onDeleteSection = (id: number, roomName: string) => {
+    ensureRemove(`ต้องการลบ ${roomName} ใช่หรือไม่?`).then(async(check) => {
+      if (check.isConfirmed) {
+        const response = await axios.delete(`/room/delete?roomId=${id}`)
+        if (response && response.status === 200) {
+          successAlert(response.data.message as string).then(() => {
+            getSectionList()
+          })
+        }
+      }
+    })
+  }
+
   const handleDialogOpen = () => {
     setDialogOpen(true)
   }
@@ -117,14 +131,17 @@ function Section() {
 
       <div className='grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-2'>
         {(sectionList && sectionList.length > 0) && sectionList.map((section, index) => (
-          <Paper elevation={3} key={index} onClick={() => navigate(`/teacher/section/${section.roomId}?year=${selectYear}&term=${selectTerm}&group=${section.roomGroup}`)} className='group flex flex-col justify-center items-center py-2 bg-white hover:bg-slate-700 duration-500 cursor-pointer h-24 relative'>
+          <Paper elevation={3} key={index} className='flex flex-col justify-center items-center py-2 bg-white h-24 relative'>
             <div className='flex items-center gap-1 justify-center absolute top-1 right-0 group-hover:text-white mx-2'>
 
-              <Tooltip title='แก้ไข' className='text-base hover:text-yellow-500 duration-200'>
+              <Tooltip title='แก้ไข' className='text-base hover:text-yellow-500 duration-200 cursor-pointer'>
                 <EditIcon className='text-base' onClick={() => onEditClick(section.roomId)} />
               </Tooltip>
+              <Tooltip title='ลบ' className='text-base hover:text-red-500 duration-200 cursor-pointer'>
+                <DeleteIcon className='text-base' onClick={() => onDeleteSection(section.roomId, `${section.roomGroup} ${section.roomTerm}/${section.roomYear}`)} />
+              </Tooltip>
               {section.roomStatus.toUpperCase() === 'CLOSED' && (
-                <Tooltip title='ปิด' className='text-base duration-200'>
+                <Tooltip title='ปิด' className='text-base duration-200 cursor-pointer'>
                   <div className='w-3 h-3 rounded-full bg-red-500' />
                 </Tooltip>
               )}
@@ -134,7 +151,7 @@ function Section() {
                 </Tooltip>
               )}
             </div>
-            <Typography className='group-hover:text-white font-bold text-lg duration-200'>{`${section.roomGroup} ${section.roomTerm}/${section.roomYear}`}</Typography>
+            <Typography onClick={() => navigate(`/teacher/section/${section.roomId}?year=${selectYear}&term=${selectTerm}&group=${section.roomGroup}`)} className='cursor-pointer hover:scale-150 font-bold text-lg duration-200'>{`${section.roomGroup} ${section.roomTerm}/${section.roomYear}`}</Typography>
           </Paper>))}
       </div>
       {dialogOpen && <SectionModal open={dialogOpen} handleDialogClose={handleDialogClose} sectionId={sectionId} />}

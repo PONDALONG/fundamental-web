@@ -109,7 +109,7 @@ function AssigmentDetail() {
       const response = await axios.get(`/assignment/find?assignmentId=${id}`)
       if (response && response.status === 200) {
         setAssignmentDetailForm(response.data as AssignmentModel)
-        contentText.current = response.data.assignmentDescription
+        contentText.current = response.data.assignmentDescription || ""
         setAssignmentStatus(response.data.assignmentStatus === 'OPEN')        
         setAssignmentType(response.data.assignmentType)
         setEndDate(dayjs(new Date(response.data.assignmentEndDate)))
