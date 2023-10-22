@@ -229,7 +229,7 @@ function Assignment() {
               <div className='w-full flex flex-col'>
                 <div className='flex gap-2 items-center'>
                   <span>กำหนดส่ง:</span>
-                  <span>{dayjs(new Date(assignment.assignmentEndDate)).locale('th').format('DD MMMM BBBB')}</span>
+                  <span>{dayjs(new Date(assignment.assignmentEndDate)).locale('th').format('DD MMMM BBBB HH:mm')}</span>
                 </div>
                 {new Date(assignment.assignmentEndDate).getTime() > new Date().getTime() && (
                   <span className='my-1'>{dateCountdown(new Date(assignment.assignmentEndDate))}</span>

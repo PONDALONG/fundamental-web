@@ -59,14 +59,14 @@ export default function Routes() {
                     path: '',
                     element: <Navigate to={'/teacher/section'}></Navigate>
                 },
-                {
-                    path: '/teacher/dashboard',
-                    element: <DashboardTeacherPage />
-                },
-                {
-                    path: '/teacher/content',
-                    element: <ContentTeacherPage />
-                },
+                // {
+                //     path: '/teacher/dashboard',
+                //     element: <DashboardTeacherPage />
+                // },
+                // {
+                //     path: '/teacher/content',
+                //     element: <ContentTeacherPage />
+                // },
                 {
                     path: '/teacher/section',
                     element: <SectionTeacherPage />
