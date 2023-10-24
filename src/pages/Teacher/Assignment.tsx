@@ -39,6 +39,8 @@ function Assignment() {
     if (!!selectGroup && !!selectYear && !!selectTerm) {
       fetchAssignment(selectGroup, selectYear, selectTerm)
       findRoomId(selectGroup, selectYear, selectTerm)
+    } else {
+      setAssignmentList([])
     }
   }, [selectGroup, selectYear, selectTerm])
 

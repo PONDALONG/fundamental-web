@@ -91,6 +91,8 @@ export default function Student() {
       checkParams()
       if (!!selectGroup && !!selectYear && !!selectTerm) {
         onSearchClick()
+      } else {
+        setStudentList([])
       }
     }
   }, [resultData, selectGroup, selectYear, selectTerm])
