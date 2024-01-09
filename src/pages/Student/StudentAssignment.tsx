@@ -20,7 +20,7 @@ function StudentAssignment() {
     const { id } = useParams();
     const [assignment, setAssignment] = useState<AssignmentModel>(new AssignmentModel())
     const [studentAssignment, setStudentAssignment] = useState<StudentAssignmentModel>(new StudentAssignmentModel())
-    const contentText = useRef('')
+    const [contentText, setContentText ]= useState('')
     const [file, setFile] = useState<File[]>([])
     const [resourceDelete, setResourceDelete] = useState<number[]>([])
     useEffect(() => {
@@ -48,7 +48,7 @@ function StudentAssignment() {
             const response = await axios.get(`/student-assignment/my-assignment?assignmentId=${id}`)
             if (response && response.status === 200) {
                 setStudentAssignment(response.data)
-                contentText.current = (response.data as StudentAssignmentModel).stdAsmResult || ""
+                setContentText((response.data as StudentAssignmentModel).stdAsmResult || "")
             }
         } catch (error) {
 
@@ -56,7 +56,8 @@ function StudentAssignment() {
     }
 
     const onContentTextChange = (data: string) => {
-        contentText.current = data
+        setContentText(data)
+        
     }
 
     const onBackClick = () => {
@@ -95,7 +96,7 @@ function StudentAssignment() {
             return waringAlert('งานนี้ผ่านการตรวจแล้ว ไม่สามารถส่งซ้ำได้')
         }
         let form: StudentAssignmentModel = studentAssignment
-        form.stdAsmResult = contentText.current
+        form.stdAsmResult = contentText
         let formData = new FormData()
         formData.append('stdAsmId', form.stdAsmId.toString())
         if (form.stdAsmGroup) {
@@ -142,6 +143,13 @@ function StudentAssignment() {
         }
     }
 
+    const isValidForm = () => {
+        if ((contentText.trim().length === 0 || contentText.trim() === '<p><br></p>') && file.length === 0 && studentAssignment.fileResources.length === 0) {
+            return false
+        }
+        return true
+    }
+
     return (
         <div className='flex flex-col gap-2 px-2 w-full min-h-screen'>
             <div className='w-full my-2 flex justify-between items-center'>
@@ -177,7 +185,7 @@ function StudentAssignment() {
                 <span>ส่งเมื่อ: {studentAssignment.stdAsmStatus.toUpperCase() === 'WAITING' ? '-' : dayjs(new Date(studentAssignment.stdAsmDateTime)).locale('th').format('DD MMMM BBBB HH:mm')}</span>
                 {studentAssignment.stdAsmStatus.toUpperCase() === 'CHECKED' && <span>คะแนน: {studentAssignment.stdAsmScore}</span>}
                 <div className='w-full bg-white'>
-                    <TextEditor sendData={onContentTextChange} data={contentText.current} />
+                    <TextEditor sendData={onContentTextChange} data={contentText} />
                 </div>
                 <div className='w-full flex flex-col gap-2 mt-16 lg:mt-10 py-3'>
                     <span className='font-bold text-primary'>อัปโหลดไฟล์</span>
@@ -213,7 +221,7 @@ function StudentAssignment() {
                     </div>
                 </div>
                 <div className='w-full flex justify-between items-center gap-2'>
-                    <Button color='success' variant='contained' onClick={onSubmitForm}>ส่งงาน</Button>
+                    <Button color='success' variant='contained' disabled={!isValidForm()} onClick={onSubmitForm}>ส่งงาน</Button>
                 </div>
             </div>
         </div>
