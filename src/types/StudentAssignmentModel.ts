@@ -1,6 +1,11 @@
 import { FileResourceModel } from "./AssignmentModel"
 import { UserModel } from "./userModel"
 
+export class SubmittedAssignment {
+    list: SubmittedAssignmentGroupModel[] | SubmittedAssignmentIndividualModel[] = []
+    title: string = ''
+}
+
 export class StudentAssignmentModel {
     stdAsmId: number = 0
     stdAsmResult: null | string = ""

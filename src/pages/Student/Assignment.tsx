@@ -154,7 +154,7 @@ function AssignmentStudent() {
                                     <span className='my-1'>{dateCountdown(new Date(assignment.assignmentEndDate))}</span>
                                 )}
                                 {new Date(assignment.assignmentEndDate).getTime() < new Date().getTime() && (
-                                    <span className='my-1 text-red-500'>(เลยกำหนด)</span>
+                                    <span className='my-1 text-amber-500'>(เลยกำหนด)</span>
                                 )}
                                 <div className='flex gap-2 items-center'>
                                     <span>ประเภทงาน:</span>
@@ -164,6 +164,12 @@ function AssignmentStudent() {
                                 <div className='flex gap-2 items-center'>
                                     <span>คะแนน:</span>
                                     <span>{assignment.assignmentScore}</span>
+                                </div>
+                                <div className='flex gap-2 items-center'>
+                                    <span>สถานะ:</span>
+                                    { assignment.studentAssignments[0].stdAsmStatus === 'WAITING' && <span className='text-orange-500'>{'ยังไม่ส่ง'}</span>}
+                                    { assignment.studentAssignments[0].stdAsmStatus === 'CHECKED' && <span className='text-blue-500'>{'ตรวจแล้ว'}</span>}
+                                    { assignment.studentAssignments[0].stdAsmStatus === 'SUBMITTED' && <span className='text-green-500'>{'ส่งแล้ว'}</span>}
                                 </div>
                             </div>
                         </CardContent>

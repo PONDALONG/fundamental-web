@@ -16,6 +16,7 @@ type Input = {
 function SubmittedGroup({ assignmentId }: Input) {
     const navigate = useNavigate()
     const [submittedList, setSubmittedList] = useState<StudentSubmitGroupModel[]>([])
+    const [assignmentTitle, setAssignmentTitle] = useState<string>('')
 
     const columns = [
         {
@@ -92,14 +93,15 @@ function SubmittedGroup({ assignmentId }: Input) {
             options: {
                 filter: false,
                 sort: false,
-                customBodyRender: (value: Date | null) => {
+                customBodyRender: (value: Date[] | string[] | null) => {
                     return (
                         <>
-                            {!!value && <Box>
-                                {dayjs(new Date(value)).locale('th').format('DD MMM BBBB HH:mm')}
-                            </Box>}
+                            {!!value && <div className='flex flex-col justify-start'>
+                                {value.map((v, index) => (
+                                    <span key={index} >{!!v ?  dayjs(new Date(v)).locale('th').format('DD MMM BBBB HH:mm') : '\u00A0'}</span>
+                                ))}
+                            </div>}
                         </>
-
                     )
                 }
             }
@@ -114,7 +116,7 @@ function SubmittedGroup({ assignmentId }: Input) {
         },
         {
             name: "stdAsmId",
-            label: 'จัดการ',
+            label: 'ตรวจงาน',
             options: {
                 filter: false,
                 sort: false,
@@ -143,13 +145,13 @@ function SubmittedGroup({ assignmentId }: Input) {
         try {
             const response = await axios.get(`/student-assignment/find-all?assignmentId=${assignmentId}`)
             if (response && response.status === 200) {
-                const data: StudentAssignmentGroupResponseModel[] = response.data as StudentAssignmentGroupResponseModel[]
+                const data: StudentAssignmentGroupResponseModel[] = response.data.list as StudentAssignmentGroupResponseModel[]
                 const temp: StudentSubmitGroupModel[] = data.map((d) => {
                     const obj: StudentSubmitGroupModel = {
                         stdAsmId: d.studentAssignments[0].stdAsmId,
                         stdAsmGroup: d.stdAsmGroup,
                         stdAsmScore: d.studentAssignments[0].stdAsmScore,
-                        stdAsmDateTime: d.studentAssignments[0].stdAsmDateTime,
+                        stdAsmDateTime: d.studentAssignments.map((s: any) => s = s.stdAsmDateTime),
                         memberName: d.studentAssignments.map((s: any) => s = s.student.user.nameTH),
                         memberStdNumber: d.studentAssignments.map((s: any) => s = s.student.user.studentNo),
                         stdAsmStatus: d.studentAssignments[0].stdAsmStatus
@@ -157,6 +159,7 @@ function SubmittedGroup({ assignmentId }: Input) {
                     return obj
                 })
                 setSubmittedList(temp)
+                setAssignmentTitle(response.data.title)
 
             }
         } catch (error) {
@@ -165,6 +168,7 @@ function SubmittedGroup({ assignmentId }: Input) {
 
     return (
         <div className='w-full'>
+            <span className='text-primary text-xl font-bold'>{assignmentTitle}</span>
             <MUIDataTable
                 title={"รายชื่อนักเรียนที่ส่งงาน"}
                 data={submittedList}
@@ -172,8 +176,8 @@ function SubmittedGroup({ assignmentId }: Input) {
                 options={{
                     elevation: 0,
                     download: false,
-                    filter: false, 
-                    print: false, 
+                    filter: false,
+                    print: false,
                     selectableRows: 'none',
                     textLabels: {
                         body: {

@@ -16,7 +16,7 @@ type Input = {
 function SubmitIndividual({ assignmentId }: Input) {
     const navigate = useNavigate()
     const [submittedList, setSubmittedList] = useState<StudentSubmitIndividualModel[]>([])
-
+    const [assignmentTitle, setAssignmentTitle] = useState<string>('')
 
 
     const columns = [
@@ -86,7 +86,7 @@ function SubmitIndividual({ assignmentId }: Input) {
         },
         {
             name: "stdAsmId",
-            label: 'จัดการ',
+            label: 'ตรวจงาน',
             options: {
                 filter: false,
                 sort: false,
@@ -115,7 +115,7 @@ function SubmitIndividual({ assignmentId }: Input) {
         try {
             const response = await axios.get(`/student-assignment/find-all?assignmentId=${assignmentId}`)
             if (response && response.status === 200) {
-                const data: StudentGroupResponseModel[] = response.data as StudentGroupResponseModel[]
+                const data: StudentGroupResponseModel[] = response.data.list as StudentGroupResponseModel[]
                 const temp: StudentSubmitIndividualModel[] = data.map((d) => {
                     const obj: StudentSubmitIndividualModel = {
                         stdAsmId: d.stdAsmId,
@@ -128,6 +128,7 @@ function SubmitIndividual({ assignmentId }: Input) {
                     return obj
                 })
                 setSubmittedList(temp)
+                setAssignmentTitle(response.data.title)
             }
         } catch (error) {
         }
@@ -135,6 +136,7 @@ function SubmitIndividual({ assignmentId }: Input) {
 
     return (
         <div className='w-full'>
+            <span className='text-primary text-xl font-bold'>{assignmentTitle}</span>
             <MUIDataTable
                 title={"รายชื่อนักเรียนที่ส่งงาน"}
                 data={submittedList}

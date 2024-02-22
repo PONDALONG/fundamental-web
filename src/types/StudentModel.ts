@@ -49,7 +49,7 @@ export class StudentSubmitGroupModel {
     memberStdNumber = new Array<string>()
     memberName = new Array<string>()
     stdAsmScore: number = 0
-    stdAsmDateTime: string | Date = ""
+    stdAsmDateTime: string[] | Date[] = []
     stdAsmStatus: string = ""
 }
 
