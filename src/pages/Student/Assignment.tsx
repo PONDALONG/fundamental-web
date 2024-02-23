@@ -163,7 +163,7 @@ function AssignmentStudent() {
                                 </div>
                                 <div className='flex gap-2 items-center'>
                                     <span>คะแนน:</span>
-                                    <span>{assignment.assignmentScore}</span>
+                                    <span>{ `${assignment.studentAssignments[0].stdAsmScore}/${assignment.assignmentScore}`}</span>
                                 </div>
                                 <div className='flex gap-2 items-center'>
                                     <span>สถานะ:</span>
